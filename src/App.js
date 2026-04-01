@@ -5,12 +5,16 @@ import Footer from './components/Footer';
 import WhatsAppWidget from './components/WhatsAppWidget';
 import ScrollToTop from './components/ScrollToTop';
 import ArtikelPage from './pages/ArtikelPage';
+import ArtikelDetailPage from './pages/ArtikelDetailPage';
 import ApaItuTrePage from './pages/ApaItuTrePage';
 import BelajarTrePage from './pages/BelajarTrePage';
 import HomePage from './pages/HomePage';
-import KontakPage from './pages/KontakPage';
+import EventsPage from './pages/EventsPage';
+import EventDetailPage from './pages/EventDetailPage';
 import TesKecemasanBerlebihPage from './pages/TesKecemasanBerlebihPage';
 import TesKesehatanMentalPage from './pages/TesKesehatanMentalPage';
+import TesGratisPage from './pages/TesGratisPage';
+import HasilTestKecemasanPage from './pages/HasilTestKecemasanPage';
 import TestimonialPage from './pages/TestimonialPage';
 import TestimonialDetailPage from './pages/TestimonialDetailPage';
 import TreIndividualsPage from './pages/TreIndividualsPage';
@@ -21,6 +25,7 @@ import KebijakanPrivasiPage from './pages/KebijakanPrivasiPage';
 import KetentuanLayananPage from './pages/KetentuanLayananPage';
 import FaqPage from './pages/FaqPage';
 import CertifiedTreProviderPage from './pages/CertifiedTreProviderPage';
+import KelasSertifikasiTreProviderPage from './pages/KelasSertifikasiTreProviderPage';
 
 function App() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -68,15 +73,23 @@ function App() {
           path="/certified-tre-provider"
           element={<CertifiedTreProviderPage />}
         />
+        <Route
+          path="/kelas-sertifikasi-tre-provider"
+          element={<KelasSertifikasiTreProviderPage />}
+        />
         <Route path="/testimonial" element={<TestimonialPage />} />
         <Route path="/testimonial/:slug" element={<TestimonialDetailPage />} />
         <Route path="/artikel" element={<ArtikelPage />} />
+        <Route path="/artikel/:slug" element={<ArtikelDetailPage />} />
+        <Route path="/tes-gratis" element={<TesGratisPage />} />
         <Route path="/tes-kesehatan-mental" element={<TesKesehatanMentalPage />} />
+        <Route path="/hasil-test" element={<HasilTestKecemasanPage />} />
         <Route
           path="/tes-kecemasan-berlebih-anxiety"
           element={<TesKecemasanBerlebihPage />}
         />
-        <Route path="/kontak" element={<KontakPage />} />
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/events/:slug" element={<EventDetailPage />} />
         <Route path="/kebijakan-privasi" element={<KebijakanPrivasiPage />} />
         <Route path="/ketentuan-layanan" element={<KetentuanLayananPage />} />
       </Routes>

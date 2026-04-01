@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import NavBar from '../components/NavBar';
 import YouTubeEmbed from '../components/YouTubeEmbed';
 
@@ -6,47 +6,6 @@ const founderParagraphs = [
   'David Berceli, Ph.D. adalah pakar internasional di bidang intervensi trauma dan resolusi konflik. Ia adalah pencipta Tension & Trauma Releasing Exercises (TRE). Teknik revolusioner ini dirancang untuk membantu melepaskan ketegangan mendalam yang tercipta di dalam tubuh selama pengalaman traumatis atau melalui stres kronis. Ia juga pendiri dan CEO Trauma Recovery Services yang energik dan kreatif.',
   'Dave telah menghabiskan dua dekade tinggal dan bekerja di sembilan negara, memberikan lokakarya pemulihan trauma dan merancang program pemulihan bagi organisasi internasional di seluruh dunia. Ia telah tinggal dan bekerja secara ekstensif di Israel/Palestina, Sudan, Uganda, Kenya, Yaman, Mesir, dan Lebanon. Ia fasih berbahasa Inggris dan Arab.',
   'David unik karena ia memiliki dasar akademis dan pengalaman yang kuat dalam psikoterapi dan terapi tubuh. Ia memadukannya dengan pemahaman yang tajam tentang dinamika yang saling terkait antara agama dan adat istiadat etnis. Kombinasi ini memungkinkannya untuk mengembangkan proses yang unik dan spesifik yang memungkinkan orang-orang dari seluruh belahan dunia mengelola dan mengatasi trauma pribadi serta membawa penyembuhan dan rekonsiliasi antara berbagai kelompok.',
-];
-
-const journeyCards = [
-  {
-    title:
-      'Jejak Awal TRE di Indonesia',
-    description:
-      'TRE pertama kali diperkenalkan di Indonesia pada tahun 2013 oleh bapak Hindra Gunawan. Secara global, TRE telah berkembang dan digunakan di lebih dari 90 negara. Indonesia sendiri menjadi negara ke-36 yang mengadopsi dan menerapkan teknik TRE.',
-  },
-  {
-    title:
-      'Perjalanan Hindra Menemukan TRE',
-    description:
-      ['Berawal dari pencarian Hindra untuk menemukan cara mengatasi trauma yang ia rasakan, ia akhirnya dipertemukan dengan TRE. Dampak latihannya terasa luar biasa-cepat, nyata, dan alami-hingga trauma yang ia bawa selama 8 tahun dapat terlepas dengan cara yang sangat sederhana.',
-      'Pengalaman ini membuat Hindra tercengang dan menumbuhkan tekad kuat untuk memperlajari TRE lebih dalam, baik dari sisi ilmiah (scientific) maupun sisi batin (soul) yang menyertainya. Untuk memperdalam pemahamannya secara langsung dari sumbernya, Hindra kemudian mengambil sertifikasi TRE bersama pencipta TRE Global, Dr. David Berceli, di Amerika Serikat.',]
-    },
-  {
-    title:
-      'Panggilan untuk Membawa TRE ke Lebih Banyak Orang',
-    description:
-      ['Dalam Perjalanan mengikuti kelas sertifikasi, Hindra semakin mendapatkan banyak insight. Di tengah proses itu, tiba-tiba terbersit sebuah panggilan yang sangat kuat: "Setiap orang Indonesia perlu belajar teknik ini."',
-        'Hindra meyakini bahwa TRE memiliki potensi besar untuk menghadirkan perubaha nyata dalam hidup banyak orang-membantu mereka melepaskan beban yang tersimpan di tubuh, kembali merasa aman, dan menjalani hidup dengan lebih ringan.'
-      ],
-  },
-  {
-    title:
-      'Menjadi Trainer TRE Pertama di Indonesia',
-    description:
-      ['Hindra terus meng-upgrade dirinya dengan mengikuti berbagai pelatihan TRE Advanced di berbagai negara. Dedikasi ini mengantarkannya meraih sertifikasi resmi sebagai Global Certification Trainer—yang pertama di Indonesia.',
-        'Sebagai Global Certification Trainer, Hindra memiliki kewenangan untuk membimbing dan mensertifikasi peserta agar dapat menjadi Pengajar TRE Bersertifikasi (Certified TRE Provider), sehingga semakin banyak fasilitator TRE berkualitas yang lahir dan dapat membawa manfaat TRE ke lebih luas lagi.'
-      ],
-  },
-  {
-    title:
-      'Konsistensi TRE Indonesia dalam Menyebarkan TRE Sejak 2013',
-    description:
-      ['Sejak tahun 2013 hingga saat ini, TRE Indonesia terus melangkah tanpa henti dalam perjalanan menyebarkan teknik TRE ke berbagai daerah di Indonesia. Komitmen ini hadir untuk mendukung terbentuknya masyarakat yang lebih kuat secara mental, sekaligus berkontribusi pada Indonesia yang semakin maju.',
-        'Per Juli 2024, TRE Indonesia telah menyelenggarakan lebih dari 900 angkatan pelatihan offline (dan terus berlanjut) serta lebih dari 500 angkatan pelatihan online (masih berlanjut). Hingga saat ini, lebih dari 30.000 orang telah mengikuti pelatihan dan merasakan manfaatnya.',
-        'Selain itu, Hindra Gunawan telah mensertifikasi lebih dari 40 Certified TRE Provider di Indonesia dan Malaysia, sehingga semakin banyak fasilitator berkualitas yang dapat membawa TRE menjangkau lebih luas lagi.',
-      ],
-  },
 ];
 
 const benefitColumns = [
@@ -77,6 +36,104 @@ const mediaLogos = [
   { src: '/assets/media/koran-jakarta.png', alt: 'Koran Jakarta' },
   { src: '/assets/media/jawa-pos.png', alt: 'Jawa Pos' },
 ];
+
+const aboutUsCards = [
+  {
+    id: '01',
+    icon: 'eye',
+    title: 'Visi - TRE Indonesia',
+    description:
+      'Semua orang di Indonesia melakukan TRE dalam hidupnya.',
+  },
+  {
+    id: '02',
+    icon: 'target',
+    title: 'Misi - TRE Indonesia',
+    description:
+      'Membawa kehidupan yang damai, bahagia dan sejahtera ke dalam setiap keluarga di Indonesia.',
+  },
+  {
+    id: '03',
+    icon: 'people',
+    title: 'Siapa Kami?',
+    description:
+      'Kami adalah tim profesional yang berdedikasi, terdiri dari praktisi dan pelatih TRE bersertifikat internasional yang berkomitmen untuk membawa manfaat TRE kepada masyarakat Indonesia.',
+  },
+  {
+    id: '04',
+    icon: 'book',
+    title: 'Bagaimana Kami Melakukannya',
+    description:
+      'Kami menawarkan berbagai program yang dirancang untuk memenuhi kebutuhan Anda:',
+    points: [
+      {
+        title: 'Seminar TRE',
+        description: 'Pengenalan TRE',
+      },
+      {
+        title: 'TRE Workshop',
+        description: 'Praktek TRE dengan TRE Indonesia',
+      },
+      {
+        title: 'Support',
+        description: 'Pendampingan seumur hidup kepada peserta untuk melewati proses pemulihan diri.',
+      },
+      {
+        title: 'Sertifikasi',
+        description: 'Menciptakan Pengajar TRE bersertifikat untuk ke seluruh pelosok Indonesia.',
+      },
+    ],
+  },
+];
+
+function AboutUsIcon({ type }) {
+  const commonProps = {
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: '1.9',
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    'aria-hidden': 'true',
+  };
+
+  if (type === 'eye') {
+    return (
+      <svg {...commonProps}>
+        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+        <circle cx="12" cy="12" r="3.2" />
+      </svg>
+    );
+  }
+
+  if (type === 'target') {
+    return (
+      <svg {...commonProps}>
+        <circle cx="12" cy="12" r="8.5" />
+        <circle cx="12" cy="12" r="4.8" />
+        <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+
+  if (type === 'people') {
+    return (
+      <svg {...commonProps}>
+        <path d="M16.5 19v-1.2a3.8 3.8 0 0 0-3.8-3.8h-1.4a3.8 3.8 0 0 0-3.8 3.8V19" />
+        <circle cx="12" cy="8.5" r="3.2" />
+        <path d="M6.8 10.2a3 3 0 0 0-2.8 3V14" />
+        <path d="M20 14v-.8a3 3 0 0 0-2.8-3" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...commonProps}>
+      <path d="M4.5 5.5h5a2 2 0 0 1 2 2V20a2.5 2.5 0 0 0-2-1h-5a2 2 0 0 1-2-2v-9.5a2 2 0 0 1 2-2Z" />
+      <path d="M19.5 5.5h-5a2 2 0 0 0-2 2V20a2.5 2.5 0 0 1 2-1h5a2 2 0 0 0 2-2v-9.5a2 2 0 0 0-2-2Z" />
+    </svg>
+  );
+}
 
 function ApaItuTrePage() {
   const journeyTimelineRef = useRef(null);
@@ -246,64 +303,38 @@ function ApaItuTrePage() {
 
       <section className="tre-about-section tre-about-us">
         <div className="tre-about-container">
-          <div className="tre-about-heading">
-            <h2>Tentang Kami</h2>
-          </div>
-          <div className="tre-about-us-timeline">
-            <div className="tre-about-us-step">
-              <div className="tre-about-us-dot">1</div>
-              <div className="tre-about-us-card">
-                <h3>Visi - TRE Indonesia</h3>
-                <p>Semua orang di Indonesia melakukan TRE dalam hidupnya.</p>
-              </div>
+          <div className="tre-about-us-shell">
+            <div className="tre-about-heading tre-about-us-intro">
+              <h2>Tentang Kami</h2>
             </div>
-            <div className="tre-about-us-step">
-              <div className="tre-about-us-dot">2</div>
-              <div className="tre-about-us-card">
-                <h3>Misi - TRE Indonesia</h3>
-                <p>
-                  Membawa kehidupan yang damai, bahagia dan sejahtera ke dalam
-                  setiap keluarga di Indonesia.
-                </p>
-              </div>
-            </div>
-            <div className="tre-about-us-step">
-              <div className="tre-about-us-dot">3</div>
-              <div className="tre-about-us-card">
-                <h3>Siapa Kami?</h3>
-                <p>
-                  Edukator, Coach, teknik self healing TRE secara benar dan
-                  mendalam secara sustainable.
-                </p>
-              </div>
-            </div>
-            <div className="tre-about-us-step">
-              <div className="tre-about-us-dot">4</div>
-              <div className="tre-about-us-card">
-                <h3>Bagaimana Kami Melakukannya</h3>
-                <p>
-                  Edukator, Coach, teknik self healing TRE secara benar dan
-                  mendalam secara sustainable.
-                </p>
-                <ul>
-                  <li>
-                    Melalui Seminar TRE Indonesia memberikan edukasi tentang
-                    kesehatan mental, psikosomatis dan hidup sehat secara lahir
-                    dan batin.
-                  </li>
-                  <li>
-                    Melakukan praktek TRE dengan aman di Workshop TRE Indonesia.
-                  </li>
-                  <li>
-                    Pendampingan seumur hidup kepada peserta untuk melewati
-                    proses pemulihan diri.
-                  </li>
-                  <li>
-                    Menciptakan Pengajar TRE bersertifikat untuk ke seluruh
-                    pelosok Indonesia.
-                  </li>
-                </ul>
-              </div>
+            <div className="tre-about-us-grid">
+              {aboutUsCards.map((card) => (
+                <article
+                  className="tre-about-us-panel"
+                  key={card.id}
+                >
+                  <div className="tre-about-us-panel-top">
+                    <span className="tre-about-us-index">{card.id}</span>
+                    <div className="tre-about-us-icon">
+                      <AboutUsIcon type={card.icon} />
+                    </div>
+                  </div>
+                  <div className="tre-about-us-panel-body">
+                    <h3>{card.title}</h3>
+                    <p>{card.description}</p>
+                  </div>
+                  {card.points && (
+                    <div className="tre-about-us-program-grid">
+                      {card.points.map((point) => (
+                        <div className="tre-about-us-program-card" key={point.title}>
+                          <h4>{point.title}</h4>
+                          {point.description ? <p>{point.description}</p> : null}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              ))}
             </div>
           </div>
         </div>
@@ -364,9 +395,9 @@ function ApaItuTrePage() {
         <div className="cta-content">
           <p>Temukan Layanan TRE yang Sesuai untuk Anda</p>
           <h>Jelajahi berbagai pilihan layanan yang dirancang untuk memenuhi kebutuhan dan kondisi Anda dengan fleksibel.</h>
-          <button className="cta-button" type="button">
+          <a className="cta-button" href="/belajar-tre">
             Lihat Layanan Seminar
-          </button>
+          </a>
         </div>
       </section>
     </div>

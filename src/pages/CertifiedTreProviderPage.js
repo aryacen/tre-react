@@ -1,59 +1,5 @@
 import NavBar from '../components/NavBar';
-
-const providers = [
-  {
-    name: 'Hindra Gunawan',
-    role: 'Founder TRE Indonesia',
-    details: [
-      '1st Global Certified TRE Provider in Indonesia',
-      'The Only Certification TRE Trainer in Indonesia',
-      '(had certified more than 40 TRE Providers in Indonesia & Malaysia)',
-    ],
-    image: 'pakhindra.jpg',
-  },
-  {
-    name: 'Juli Wati Zeng',
-    role: 'Global Certified TRE Provider in Indonesia',
-    details: ['TRE Mentor Trainee', 'Compasionate Enquiry Trainee'],
-    image: 'juli.jpg',
-  },
-  {
-    name: 'Marion',
-    role: 'Global Certified TRE Provider in Indonesia',
-    details: [],
-    image: 'marion.jpg',
-  },
-  {
-    name: 'Cornelia Nurisa',
-    role: 'Global Certified TRE Provider in Indonesia',
-    details: [],
-    image: 'cornelia.jpg',
-  },
-  {
-    name: 'Johannes',
-    role: 'Global Certified TRE Provider in Indonesia',
-    details: [],
-    image: 'johanes.jpg',
-  },
-  {
-    name: 'Ivonne Somar',
-    role: 'Global Certified TRE Provider in Indonesia',
-    details: [],
-    image: 'somar.jpg',
-  },
-  {
-    name: 'Ilmia R. Susanti (Santi)',
-    role: 'Global Certified TRE Provider in Indonesia',
-    details: [],
-    image: 'ilmia.jpg',
-  },
-  {
-    name: 'Yuliana',
-    role: 'Global Certified TRE Provider in Indonesia',
-    details: [],
-    image: 'yuliana.jpg',
-  },
-];
+import { certifiedTreProviders } from '../data/treProviderData';
 
 function CertifiedTreProviderPage() {
   return (
@@ -79,7 +25,7 @@ function CertifiedTreProviderPage() {
 
       <section className="certified-provider-section">
         <div className="certified-provider-grid">
-          {providers.map((provider) => (
+          {certifiedTreProviders.map((provider) => (
             <article className="certified-provider-card" key={provider.name}>
               <img
                 src={`${process.env.PUBLIC_URL}/assets/home/${provider.image}`}
@@ -87,7 +33,7 @@ function CertifiedTreProviderPage() {
                 loading="lazy"
                 onError={(event) => {
                   event.currentTarget.onerror = null;
-                  event.currentTarget.src = `${process.env.PUBLIC_URL}/assets/home/hindra.jpg`;
+                  event.currentTarget.src = `${process.env.PUBLIC_URL}/assets/home/${provider.fallbackImage}`;
                 }}
               />
               <div className="certified-provider-card-body">
@@ -116,9 +62,9 @@ function CertifiedTreProviderPage() {
             Jelajahi berbagai pilihan layanan yang dirancang untuk memenuhi
             kebutuhan dan kondisi Anda dengan fleksibel.
           </h>
-          <button className="cta-button" type="button">
+          <a className="cta-button" href="/belajar-tre">
             Lihat layanan seminar
-          </button>
+          </a>
         </div>
       </section>
     </div>

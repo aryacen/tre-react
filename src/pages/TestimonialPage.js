@@ -21,12 +21,7 @@ function TestimonialPage() {
   }, [activeCategory]);
 
   return (
-    <div
-      className="testimonial-page testimonial-list-page"
-      style={{
-        backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/testimonial-bg.jpg)`,
-      }}
-    >
+    <div className="testimonial-page testimonial-list-page">
       <header
         className="tre-about-hero testimonial-hero"
         style={{
@@ -125,9 +120,9 @@ function TestimonialPage() {
             Jelajahi berbagai pilihan layanan yang dirancang untuk memenuhi
             kebutuhan dan kondisi Anda dengan fleksibel.
           </h>
-          <button className="cta-button" type="button">
+          <a className="cta-button" href="/belajar-tre">
             Lihat layanan seminar
-          </button>
+          </a>
         </div>
       </section>
     </div>

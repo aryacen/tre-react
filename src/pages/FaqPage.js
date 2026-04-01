@@ -95,9 +95,9 @@ function FaqPage() {
             Jelajahi berbagai pilihan layanan yang dirancang untuk memenuhi
             kebutuhan dan kondisi Anda dengan fleksibel.
           </h>
-          <button className="cta-button" type="button">
+          <a className="cta-button" href="/belajar-tre">
             Lihat layanan seminar
-          </button>
+          </a>
         </div>
       </section>
     </div>

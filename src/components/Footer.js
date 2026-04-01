@@ -15,13 +15,12 @@ function Footer() {
                 <NavLink to="/certified-tre-provider">Certified TRE Provider</NavLink>
               </li>
               <li>
-                <span>FAQs</span>
+                <NavLink to="/faq">FAQs</NavLink>
               </li>
               <li>
-                <span>Kelas Sertifikasi TRE Provider</span>
-              </li>
-              <li>
-                <span>Shaka Foundation</span>
+                <a href="https://shakafoundation.com/" target="_blank" rel="noreferrer">
+                  Shaka Foundation
+                </a>
               </li>
               <li>
                 <NavLink to="/artikel">Artikel</NavLink>
@@ -37,14 +36,25 @@ function Footer() {
               <li>
                 <NavLink to="/tre-online">TRE Online di Rumah Aja</NavLink>
               </li>
+              <li>
+                <NavLink to="/kelas-sertifikasi-tre-provider">
+                  Kelas Sertifikasi TRE Provider
+                </NavLink>
+              </li>
             </ul>
           </div>
-          <div className="footer-col">
+          <div className="footer-col" id="footer-kontak">
             <h3>Kontak</h3>
             <div className="footer-contact">
               <p>
-                Jl. Danau Sunter Utara No.2-3 Blok B1B, RT.1/RW.10, Sunter
-                Agung, Tanjung Priok, North Jakarta City, Jakarta 14350
+                <a
+                  href="https://maps.app.goo.gl/HX3tVAp7z6Up8d8Q6"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Jl. Danau Sunter Utara No.2-3 Blok B1B, RT.1/RW.10, Sunter
+                  Agung, Tanjung Priok, North Jakarta City, Jakarta 14350
+                </a>
               </p>
               <p>0818-901-789</p>
             </div>

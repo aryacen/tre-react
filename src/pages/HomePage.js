@@ -70,39 +70,48 @@ const scheduleItems = [
   {
     title: 'Seminar TRE Jakarta',
     image: '/assets/home/jakarta.jpg',
+    slug: 'jakarta',
   },
   {
     title: 'Seminar TRE Bali',
     image: '/assets/home/bali.jpg',
+    slug: 'bali',
   },
   {
     title: 'Seminar TRE Balikpapan',
     image: '/assets/home/balikpapan.jpg',
+    slug: 'balikpapan',
   },
   {
     title: 'Seminar TRE Bandung',
     image: '/assets/home/bandung.png',
+    slug: 'bandung',
   },
   {
     title: 'Seminar TRE Banjarmasin',
     image: '/assets/home/banjarmasin.jpg',
+    slug: 'banjarmasin',
   },
   {
     title: 'Seminar TRE Batam',
     image: '/assets/home/batam.jpg',
+    slug: 'batam',
   },
   {
     title: 'Seminar TRE Bogor',
     image: '/assets/home/bogor.jpg',
+    slug: 'bogor',
   },
   {
     title: 'Seminar TRE Cirebon',
     image: '/assets/home/cirebon.png',
+    slug: 'cirebon',
   },
 ];
 
 const blogItems = [
   {
+    slug: 'stress-bikin-nafsu-makan-berantakan',
     category: 'Asam Lambung / GERD, Stres',
     title: 'Stress Bikin Nafsu Makan Berantakan? Kok Bisa?',
     excerpt:
@@ -110,6 +119,7 @@ const blogItems = [
     image: '/assets/home/makan.png',
   },
   {
+    slug: 'kenapa-stres-bikin-badan-terasa-berat',
     category: 'Stres',
     title: 'Kenapa Stres Bikin Badan Cepat Terasa Berat',
     excerpt:
@@ -117,6 +127,7 @@ const blogItems = [
     image: '/assets/home/stressberat.jpg',
   },
   {
+    slug: 'masalah-kecil-dibesar-besarkan',
     category: 'Kecemasan Berlebihan',
     title: 'Kenapa Masalah Kecil Suka Dibesarkan?',
     excerpt:
@@ -124,6 +135,7 @@ const blogItems = [
     image: '/assets/home/smallproblem.jpg',
   },
   {
+    slug: '5-cara-meredam-overthinking',
     category: 'Kecemasan Berlebihan',
     title: '5 Cara Meredam Overthinking',
     excerpt:
@@ -288,6 +300,11 @@ function HomePage() {
               <img src={logo.src} alt={logo.alt} />
             </div>
           ))}
+          {trustedLogos.map((logo) => (
+            <div className="logo-tile logo-tile-duplicate" key={`dup-${logo.src}`} aria-hidden="true">
+              <img src={logo.src} alt="" />
+            </div>
+          ))}
         </div>
       </section>
 
@@ -302,9 +319,6 @@ function HomePage() {
             <p className="eyebrow3">TESTIMONIAL</p>
             <h2>Kisah Transformatif dari Peserta Kami</h2>
           </div>
-          <NavLink className="btn btn-accent btn-link" to="/testimonial">
-            Lihat Kisah Transformatif Lainnya →
-          </NavLink>
         </div>
         <div className="testimonial-grid">
           {homeTestimonials.map((item) => (
@@ -333,6 +347,11 @@ function HomePage() {
               </div>
             </article>
           ))}
+        </div>
+        <div className="testimonials-cta">
+          <NavLink className="btn btn-accent btn-link" to="/testimonial">
+            Lihat Kisah Transformatif Lainnya →
+          </NavLink>
         </div>
       </section>
 
@@ -372,9 +391,10 @@ function HomePage() {
           </button>
           <div className="schedule-grid" ref={scheduleTrackRef}>
             {scheduleItems.map((item) => (
-              <article
+              <Link
                 className="schedule-card"
                 key={`${item.title}-${item.image}`}
+                to={`/tre-individuals/${item.slug}`}
                 style={{ backgroundImage: `url(${item.image})` }}
               >
                 <div className="schedule-overlay">
@@ -386,7 +406,7 @@ function HomePage() {
                     </span>
                   </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
           <button
@@ -414,9 +434,9 @@ function HomePage() {
           </button>
         </div>
         <div className="schedule-actions">
-          <button className="btn btn-accent" type="button">
+          <Link className="btn btn-accent btn-link" to="/tre-individuals">
             Jadwal Seminar Kota Lain →
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -434,9 +454,9 @@ function HomePage() {
             <p className="test-eyebrow">TEST</p>
             <h2>Pahami Kondisi Anda Saat ini dengan Tes Sederhana</h2>
             <p className="test-copy">Dengan pendekatan tes DASS dan GAD-7</p>
-            <button className="test-link" type="button">
+            <Link className="test-link" to="/tes-gratis">
               Mulai Test →
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -449,12 +469,9 @@ function HomePage() {
       >
         <div className="blog-header">
           <div>
-            <p className="blog-eyebrow">BLOG</p>
-            <h2>Jelajahi Blog Kami untuk Pemahaman Lebih dalam</h2>
+            <p className="blog-eyebrow">ARTIKEL</p>
+            <h2>Jelajahi Artikel Kami untuk Pemahaman Lebih dalam</h2>
           </div>
-          <button className="btn btn-accent" type="button">
-            Semua Blog →
-          </button>
         </div>
         <div className="schedule-carousel blog-carousel">
           <button
@@ -482,7 +499,12 @@ function HomePage() {
           </button>
           <div className="blog-grid" ref={blogTrackRef}>
             {blogItems.map((item) => (
-              <article className="blog-card" key={item.title}>
+              <Link
+                className="blog-card"
+                key={item.title}
+                to={`/artikel/${item.slug}`}
+                aria-label={`Baca artikel ${item.title}`}
+              >
                 <div className="blog-media">
                   <img src={item.image} alt={item.title} />
                 </div>
@@ -490,11 +512,11 @@ function HomePage() {
                   <p className="blog-category">{item.category}</p>
                   <h3>{item.title}</h3>
                   <p className="blog-excerpt">{item.excerpt}</p>
-                  <button className="blog-link" type="button">
+                  <span className="blog-link">
                     Baca Selengkapnya →
-                  </button>
+                  </span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
           <button
@@ -521,6 +543,11 @@ function HomePage() {
             →
           </button>
         </div>
+        <div className="blog-actions">
+          <Link className="btn btn-accent btn-link" to="/artikel">
+            Semua Artikel →
+          </Link>
+        </div>
       </section>
 
       <section
@@ -535,9 +562,9 @@ function HomePage() {
             Jelajahi berbagai pilihan layanan yang dirancang untuk memenuhi
             kebutuhan dan kondisi Anda dengan fleksibel.
           </h>
-          <button className="cta-button" type="button">
+          <a className="cta-button" href="/belajar-tre">
             Lihat layanan seminar
-          </button>
+          </a>
         </div>
       </section>
     </>
@@ -545,6 +572,3 @@ function HomePage() {
 }
 
 export default HomePage;
-
-
-

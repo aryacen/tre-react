@@ -73,16 +73,18 @@ function TreIndividualCityPage() {
                   <strong>{city.lokasi}</strong>
                 </div>
               </div>
-              <div className="tre-city-price">
-                <span className="tre-city-price-old">Rp 598.000</span>
-                <span className="tre-city-price-new">Rp 299.000</span>
+              <div className="tre-city-action-card">
+                <div className="tre-city-price">
+                  <span className="tre-city-price-old">Rp 598.000</span>
+                  <span className="tre-city-price-new">Rp 299.000</span>
+                </div>
+                <Link
+                  className="tre-city-cta"
+                  to={`/tre-individuals/${city.slug}/payment`}
+                >
+                  Daftar Seminar
+                </Link>
               </div>
-              <Link
-                className="tre-city-cta"
-                to={`/tre-individuals/${city.slug}/payment`}
-              >
-                Daftar Seminar
-              </Link>
             </div>
           </div>
 
@@ -93,6 +95,10 @@ function TreIndividualCityPage() {
                 <img
                   src={`${process.env.PUBLIC_URL}/assets/home/${city.speaker.image}`}
                   alt={city.speaker.name}
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = `${process.env.PUBLIC_URL}/assets/home/${city.speaker.fallbackImage}`;
+                  }}
                 />
                 <div>
                   <h4>{city.speaker.name}</h4>
@@ -275,9 +281,9 @@ Karena metode berdasarkan kecerdasan Tubuh, Anda tidak perlu menceritakan masala
             Jelajahi berbagai pilihan layanan yang dirancang untuk memenuhi
             kebutuhan dan kondisi Anda dengan fleksibel.
           </h>
-          <button className="cta-button" type="button">
+          <a className="cta-button" href="/belajar-tre">
             Lihat layanan seminar
-          </button>
+          </a>
         </div>
       </section>
     </div>
