@@ -78,6 +78,7 @@ function EventDetailPage() {
   const { slug } = useParams();
   const event = findEventBySlug(slug);
   const [copyLabel, setCopyLabel] = useState('Copy Link');
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
   const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
   const galleryImages =
     event?.gallery?.length > 0 ? event.gallery : event?.image ? [event.image] : [];
@@ -85,14 +86,20 @@ function EventDetailPage() {
 
   useEffect(() => {
     setActiveIndex(0);
+    setIsViewerOpen(false);
   }, [slug]);
 
   useEffect(() => {
-    if (galleryImages.length <= 1) {
+    if (galleryImages.length <= 1 && !isViewerOpen) {
       return undefined;
     }
 
     const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsViewerOpen(false);
+        return;
+      }
+
       if (event.key === 'ArrowLeft') {
         setActiveIndex((current) =>
           current === 0 ? galleryImages.length - 1 : current - 1
@@ -111,7 +118,15 @@ function EventDetailPage() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [galleryImages.length]);
+  }, [galleryImages.length, isViewerOpen]);
+
+  useEffect(() => {
+    document.body.classList.toggle('events-lightbox-open', isViewerOpen);
+
+    return () => {
+      document.body.classList.remove('events-lightbox-open');
+    };
+  }, [isViewerOpen]);
 
   const showPrevImage = () => {
     setActiveIndex((current) =>
@@ -123,6 +138,11 @@ function EventDetailPage() {
     setActiveIndex((current) =>
       current === galleryImages.length - 1 ? 0 : current + 1
     );
+  };
+
+  const openViewerAt = (index) => {
+    setActiveIndex(index);
+    setIsViewerOpen(true);
   };
 
   if (!event) {
@@ -228,10 +248,17 @@ function EventDetailPage() {
               <span aria-hidden="true">&lt;</span>
             </button>
           ) : null}
-          <img
-            src={`${process.env.PUBLIC_URL}${galleryImages[activeIndex]}`}
-            alt={event.title}
-          />
+          <button
+            className="events-detail-image-stage"
+            type="button"
+            aria-label={`Perbesar gambar ${activeIndex + 1} dari ${galleryImages.length}`}
+            onClick={() => openViewerAt(activeIndex)}
+          >
+            <img
+              src={`${process.env.PUBLIC_URL}${galleryImages[activeIndex]}`}
+              alt={event.title}
+            />
+          </button>
           {galleryImages.length > 1 ? (
             <button
               className="events-detail-nav-button is-next"
@@ -308,6 +335,63 @@ function EventDetailPage() {
           </aside>
         </div>
       </section>
+
+      {isViewerOpen ? (
+        <div
+          className="events-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Galeri ${event.title}`}
+          onClick={() => setIsViewerOpen(false)}
+        >
+          <button
+            className="events-lightbox-close"
+            type="button"
+            aria-label="Tutup galeri"
+            onClick={() => setIsViewerOpen(false)}
+          >
+            ×
+          </button>
+          {galleryImages.length > 1 ? (
+            <button
+              className="events-lightbox-nav is-prev"
+              type="button"
+              aria-label="Gambar sebelumnya"
+              onClick={(clickEvent) => {
+                clickEvent.stopPropagation();
+                showPrevImage();
+              }}
+            >
+              <span aria-hidden="true">&lt;</span>
+            </button>
+          ) : null}
+          <div
+            className="events-lightbox-frame"
+            onClick={(clickEvent) => clickEvent.stopPropagation()}
+          >
+            <img
+              src={`${process.env.PUBLIC_URL}${galleryImages[activeIndex]}`}
+              alt={`${event.title} ${activeIndex + 1}`}
+            />
+          </div>
+          {galleryImages.length > 1 ? (
+            <button
+              className="events-lightbox-nav is-next"
+              type="button"
+              aria-label="Gambar berikutnya"
+              onClick={(clickEvent) => {
+                clickEvent.stopPropagation();
+                showNextImage();
+              }}
+            >
+              <span aria-hidden="true">&gt;</span>
+            </button>
+          ) : null}
+          <div className="events-lightbox-counter" aria-live="polite">
+            {activeIndex + 1} / {galleryImages.length}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

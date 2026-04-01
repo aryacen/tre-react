@@ -56,7 +56,7 @@ function TestimonialDetailPage() {
             backgroundImage: `linear-gradient(120deg, rgba(9, 20, 30, 0.85) 0%, rgba(16, 33, 45, 0.6) 45%, rgba(32, 60, 80, 0.35) 100%), url(${process.env.PUBLIC_URL}/assets/home/testimony.jpg)`,
           }}
         >
-          <NavBar />
+          <NavBar className="nav-mobile-surface-light" />
           <div className="tre-about-hero-inner">
             <div className="tre-about-hero-copy">
               <h1>Testimonial Tidak Ditemukan</h1>
@@ -83,7 +83,7 @@ function TestimonialDetailPage() {
           backgroundImage: `linear-gradient(120deg, rgba(9, 20, 30, 0.85) 0%, rgba(16, 33, 45, 0.6) 45%, rgba(32, 60, 80, 0.35) 100%), url(${process.env.PUBLIC_URL}/assets/home/testimony.jpg)`,
         }}
       >
-        <NavBar />
+        <NavBar className="nav-mobile-surface-light" />
         <div className="tre-about-hero-inner">
           <div className="tre-about-hero-copy">
             <h1>Testimonial</h1>
@@ -198,7 +198,10 @@ function TestimonialDetailPage() {
                   <div className="testimonial-library-card-video">
                     <YouTubeEmbed videoId={item.videoId} title={item.title} />
                   </div>
-                  <div className="testimonial-library-card-body">
+                  <Link
+                    className="testimonial-library-card-body testimonial-library-card-body-link"
+                    to={`/testimonial/${item.slug}`}
+                  >
                     <div className="testimonial-library-card-meta">
                       <span className="testimonial-library-card-name">
                         {item.name}
@@ -209,13 +212,10 @@ function TestimonialDetailPage() {
                     </div>
                     <h3>{item.title}</h3>
                     <p>{item.body}</p>
-                    <Link
-                      className="testimonial-library-card-action"
-                      to={`/testimonial/${item.slug}`}
-                    >
+                    <span className="testimonial-library-card-action">
                       <span>Baca Selengkapnya</span>
-                    </Link>
-                  </div>
+                    </span>
+                  </Link>
                 </article>
               ))}
               {relatedTestimonials.length === 0 && (

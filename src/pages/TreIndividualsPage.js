@@ -3,6 +3,15 @@ import { Link } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { treCityData } from '../data/treCityData';
 
+const featuredCityNames = [
+  'Jakarta',
+  'Bandung',
+  'Surabaya',
+  'Bali',
+  'Yogyakarta',
+  'Medan',
+];
+
 function TreIndividualsPage() {
   const [cityQuery, setCityQuery] = useState('');
   const cityPins = treCityData.map((city) => city.name);
@@ -19,6 +28,10 @@ function TreIndividualsPage() {
     if (!query) return [];
     return cityPins.filter((city) => city.toLowerCase().includes(query));
   }, [cityPins, cityQuery]);
+  const featuredCities = useMemo(
+    () => featuredCityNames.filter((city) => citySlugMap[city]),
+    [citySlugMap]
+  );
 
   return (
     <div className="tre-individual-page">
@@ -69,6 +82,17 @@ function TreIndividualsPage() {
                 ))
               )}
             </div>
+          </div>
+          <div className="tre-individual-mobile-featured">
+            {featuredCities.map((city) => (
+              <Link
+                key={city}
+                to={`/tre-individuals/${citySlugMap[city]}`}
+                className="tre-individual-featured-chip"
+              >
+                {city}
+              </Link>
+            ))}
           </div>
           <div className="tre-individual-map-layer">
             <img

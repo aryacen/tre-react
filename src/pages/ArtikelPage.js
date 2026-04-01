@@ -26,7 +26,7 @@ function ArtikelPage() {
           backgroundImage: `linear-gradient(120deg, rgba(9, 20, 30, 0.85) 0%, rgba(16, 33, 45, 0.6) 45%, rgba(32, 60, 80, 0.35) 100%), url(${process.env.PUBLIC_URL}/assets/home/artikel.jpg)`,
         }}
       >
-        <NavBar />
+        <NavBar className="nav-mobile-surface-light" />
         <div className="tre-about-hero-inner">
           <div className="tre-about-hero-copy">
             <h1>Artikel</h1>

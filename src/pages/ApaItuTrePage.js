@@ -182,7 +182,7 @@ function ApaItuTrePage() {
           backgroundImage: `linear-gradient(120deg, rgba(9, 20, 30, 0.85) 0%, rgba(16, 33, 45, 0.6) 45%, rgba(32, 60, 80, 0.35) 100%), url(${process.env.PUBLIC_URL}/assets/home/apaitutre.jpg)`,
         }}
       >
-        <NavBar />
+        <NavBar className="nav-mobile-surface-light" />
         <div className="tre-about-hero-inner">
           <div className="tre-about-hero-copy">
             <h1>Tentang TRE</h1>
@@ -192,9 +192,9 @@ function ApaItuTrePage() {
 
       <section className="tre-about-section tre-founder">
         <div className="tre-about-container tre-founder-grid">
+          <p className="eyebrow tre-founder-eyebrow">FOUNDER</p>
+          <h2 className="tre-founder-heading">Pakar Trauma Global dan Pencipta TRE</h2>
           <div className="tre-founder-text">
-            <p className="eyebrow">FOUNDER</p>
-            <h2>Pakar Trauma Global dan Pencipta TRE</h2>
             {founderParagraphs.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}

@@ -28,7 +28,7 @@ function TestimonialPage() {
           backgroundImage: `linear-gradient(120deg, rgba(9, 20, 30, 0.85) 0%, rgba(16, 33, 45, 0.6) 45%, rgba(32, 60, 80, 0.35) 100%), url(${process.env.PUBLIC_URL}/assets/home/testimony.jpg)`,
         }}
       >
-        <NavBar />
+        <NavBar className="nav-mobile-surface-light" />
         <div className="tre-about-hero-inner">
           <div className="tre-about-hero-copy">
             <h1>Testimonial</h1>
@@ -81,7 +81,10 @@ function TestimonialPage() {
                     title={video.title}
                   />
                 </div>
-                <div className="testimonial-library-card-body">
+                <Link
+                  className="testimonial-library-card-body testimonial-library-card-body-link"
+                  to={`/testimonial/${video.slug}`}
+                >
                   <div className="testimonial-library-card-meta">
                     <span className="testimonial-library-card-name">{video.name}</span>
                     <span className="testimonial-library-card-role">{video.occupation}</span>
@@ -95,13 +98,10 @@ function TestimonialPage() {
                       </span>
                     ))}
                   </div>
-                  <Link
-                    className="testimonial-library-card-action"
-                    to={`/testimonial/${video.slug}`}
-                  >
+                  <span className="testimonial-library-card-action">
                     <span>Baca Selengkapnya</span>
-                  </Link>
-                </div>
+                  </span>
+                </Link>
               </article>
             ))}
           </div>

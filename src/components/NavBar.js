@@ -60,13 +60,26 @@ function NavBar({
     };
   }, [isMenuOpen]);
 
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  const handleToggleClick = () => {
+    if (isMenuOpen) {
+      closeMenu();
+      return;
+    }
+
+    setIsMenuOpen(true);
+  };
+
   const handleHomeClick = (event) => {
     if (location.pathname === '/') {
       event.preventDefault();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    setIsMenuOpen(false);
+    closeMenu();
   };
 
   const handleKontakClick = () => {
@@ -76,7 +89,7 @@ function NavBar({
       kontakSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    setIsMenuOpen(false);
+    closeMenu();
   };
 
   const handleDropdownTrigger = (event, key) => {
@@ -104,7 +117,7 @@ function NavBar({
         ref={navToggleRef}
         aria-label={isMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
         aria-expanded={isMenuOpen}
-        onClick={() => setIsMenuOpen((open) => !open)}
+        onClick={handleToggleClick}
       >
         <span />
         <span />
@@ -113,7 +126,7 @@ function NavBar({
       <div
         className={`nav-mobile-backdrop${isMenuOpen ? ' is-open' : ''}`}
         aria-hidden="true"
-        onClick={() => setIsMenuOpen(false)}
+        onClick={() => closeMenu()}
       />
       <div
         className={`nav-shell${isMenuOpen ? ' is-open' : ''}`}
@@ -126,7 +139,7 @@ function NavBar({
         </div>
         <div className="nav-links">
           <div className="nav-item">
-            <NavLink className={navLinkClass} to="/apa-itu-tre" onClick={() => setIsMenuOpen(false)}>
+            <NavLink className={navLinkClass} to="/apa-itu-tre" onClick={() => closeMenu()}>
               Apa itu TRE
             </NavLink>
           </div>
@@ -152,38 +165,38 @@ function NavBar({
               </span>
             </NavLink>
             <div className="dropdown-menu">
-              <NavLink className={dropdownLinkClass} to="/tre-individuals" onClick={() => setIsMenuOpen(false)}>
+              <NavLink className={dropdownLinkClass} to="/tre-individuals" onClick={() => closeMenu()}>
                 TRE Individuals
               </NavLink>
-              <NavLink className={dropdownLinkClass} to="/tre-online" onClick={() => setIsMenuOpen(false)}>
+              <NavLink className={dropdownLinkClass} to="/tre-online" onClick={() => closeMenu()}>
                 TRE Online Di Rumah Aja
               </NavLink>
               <NavLink
                 className={dropdownLinkClass}
                 to="/kelas-sertifikasi-tre-provider"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => closeMenu()}
               >
                 Kelas Sertifikasi TRE Provider
               </NavLink>
             </div>
           </div>
           <div className="nav-item">
-            <NavLink className={navLinkClass} to="/faq" onClick={() => setIsMenuOpen(false)}>
+            <NavLink className={navLinkClass} to="/faq" onClick={() => closeMenu()}>
               FAQ
             </NavLink>
           </div>
           <div className="nav-item">
-            <NavLink className={navLinkClass} to="/testimonial" onClick={() => setIsMenuOpen(false)}>
+            <NavLink className={navLinkClass} to="/testimonial" onClick={() => closeMenu()}>
               Testimonial
             </NavLink>
           </div>
           <div className="nav-item">
-            <NavLink className={navLinkClass} to="/artikel" onClick={() => setIsMenuOpen(false)}>
+            <NavLink className={navLinkClass} to="/artikel" onClick={() => closeMenu()}>
               Artikel
             </NavLink>
           </div>
           <div className="nav-item">
-            <NavLink className={navLinkClass} to="/events" onClick={() => setIsMenuOpen(false)}>
+            <NavLink className={navLinkClass} to="/events" onClick={() => closeMenu()}>
               Events
             </NavLink>
           </div>
@@ -209,13 +222,13 @@ function NavBar({
               </span>
             </NavLink>
             <div className="dropdown-menu">
-              <NavLink className={dropdownLinkClass} to="/tes-kesehatan-mental" onClick={() => setIsMenuOpen(false)}>
+              <NavLink className={dropdownLinkClass} to="/tes-kesehatan-mental" onClick={() => closeMenu()}>
                 Tes Kesehatan Mental
               </NavLink>
               <NavLink
                 className={dropdownLinkClass}
                 to="/tes-kecemasan-berlebih-anxiety"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => closeMenu()}
               >
                 Tes Kecemasan Berlebih (Anxiety)
               </NavLink>

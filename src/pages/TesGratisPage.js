@@ -48,10 +48,7 @@ function TesGratisPage() {
                   <div className="belajar-tre-card-body">
                     <h3>{card.title}</h3>
                     <span>Ambil Tes</span>
-                    <button type="button" aria-label={`Buka ${card.title}`}>
-                      →
-                    </button>
-                  </div>
+                                      </div>
                 </article>
               </Link>
             ))}

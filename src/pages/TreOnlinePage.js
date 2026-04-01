@@ -3,7 +3,7 @@ import NavBar from '../components/NavBar';
 
 const ONLINE_SPEAKER = {
   name: 'Hindra Gunawan',
-  image: 'individual.jpg',
+  image: 'pakhindra.jpg',
   roles: [
     'Founder of TRE Indonesia',
     '1st Certified TRE Provider in Indonesia',
@@ -87,13 +87,15 @@ function TreOnlinePage() {
                   <strong>Online via ZOOM</strong>
                 </div>
               </div>
-              <div className="tre-city-price">
-                <span className="tre-city-price-old">Rp 598.000</span>
-                <span className="tre-city-price-new">Rp 299.000</span>
+              <div className="tre-city-action-card">
+                <div className="tre-city-price">
+                  <span className="tre-city-price-old">Rp 598.000</span>
+                  <span className="tre-city-price-new">Rp 299.000</span>
+                </div>
+                <Link className="tre-city-cta" to="/tre-individuals">
+                  Daftar Seminar
+                </Link>
               </div>
-              <Link className="tre-city-cta" to="/tre-individuals">
-                Daftar Seminar
-              </Link>
             </div>
           </div>
 
@@ -203,74 +205,6 @@ function TreOnlinePage() {
             </div>
           </article>
 
-          <article className="tre-city-card tre-city-faq">
-            <span className="tre-city-faq-eyebrow">FAQs</span>
-            <h3>Jawaban untuk Pertanyaan Anda</h3>
-            <div className="tre-city-faq-list">
-              <details>
-                <summary>Apa itu TRE?</summary>
-                <p>
-                  TRE (Tension & Trauma Releasing Exercises) adalah serangkaian latihan sederhana namun inovatif yang membantu tubuh melepaskan pola otot dalam dari stres, ketegangan, dan trauma. Dikembangkan oleh Dr. David Berceli, TRE menggunakan mekanisme refleks alami berupa gemetar atau bergetar untuk melepaskan ketegangan otot dan menenangkan sistem saraf, membantu tubuh kembali ke keadaan seimbang.
-                </p>
-              </details>
-              <details>
-                <summary>Bagaimana cara kerja TRE?</summary>
-                <p>
-                  TRE bekerja dengan mengaktifkan refleks gemetar alami yang membantu melepaskan stres dan ketegangan pada tingkat otot yang dalam. Refleks ini membantu merilekskan sistem saraf dan mengembalikan keseimbangan tanpa memerlukan fokus mental atau usaha fisik.
-
-Karena metode berdasarkan kecerdasan Tubuh, Anda tidak perlu menceritakan masalah seperti sesi konseling pada umumnya.
-                </p>
-              </details>
-              <details>
-                <summary>Siapa yang bisa mendapatkan manfaat dari TRE?</summary>
-                <p>
-                  TRE bermanfaat bagi siapa saja yang mengalami stres, kecemasan, PTSD, ketegangan otot, sulit mengontrol emosi, gejala psikosomatis (di antaranya : Asam lambung, Gerd, susah tidur, kliyengan) atau mereka yang ingin meningkatkan kesejahteraan secara keseluruhan. Ini juga cocok untuk atlet dan performer yang ingin meningkatkan pemulihan dan kinerja.
-                </p>
-              </details>
-              <details>
-                <summary>Apakah TRE aman untuk semua orang?</summary>
-                <p>
-                  TRE umumnya aman untuk kebanyakan orang. Namun, individu dengan kondisi fisik atau psikologis tertentu harus berkonsultasi dengan Pengajar TRE bersertifikat sebelum memulai latihan ini.
-                </p>
-              </details>
-              <details>
-                <summary>Bisakah TRE digabungkan dengan terapi lain?</summary>
-                <p>
-                  Ya, TRE bisa menjadi praktik pelengkap yang efektif ketika digabungkan dengan modalitas perawatan lainnya, seperti psikoterapi, terapi fisik, atau program kesehatan.
-                </p>
-              </details>
-              <details>
-                <summary>Seberapa sering saya harus mempraktikkan TRE?</summary>
-                <p>
-                  Frekuensi latihan dapat bervariasi berdasarkan kebutuhan dan preferensi individu. Di pertemuan workshop, Anda akan mendapatkan arahan dari Pengajar TRE. Banyak orang mendapatkan manfaat dari mempraktikkan TRE dua kali seminggu, sementara yang lain mungkin berlatih lebih sering tergantung pada tingkat stres dan tujuan pribadi mereka.
-                </p>
-              </details>
-              <details>
-                <summary>Saya tidak tahu apakah saya bisa melakukan TRE?</summary>
-                <p>
-                  Tidak diperlukan syarat khusus untuk bisa melakukan latihan ini. Anak kecil sampai orangtua usia 85th bisa melakukan dengan aman. Meskipun Anda punya keterbatasan fisik, Pengajar TRE bersertifikasi akan membimbing Anda melakukan dengan cara yang aman.
-                </p>
-              </details>
-              <details>
-                <summary>Mengapa TRE bisa meningkatkan kualitas tidur?</summary>
-                <p>
-                  Tubuh secara intuitif mengetahui cara dan waktu untuk tidur. Kesulitan tidur hanyalah gejala bahwa ada sesuatu yang tidak seimbang dalam tubuh. Insomnia sering kali merupakan sinyal bahwa stres, kecemasan, dan ketegangan menyebabkan "mekanisme tidur" tidak berfungsi dengan baik. Relaksasi otot yang dalam, yang dipicu oleh TRE, mendorong tubuh untuk mengaktifkan respons istirahat dan relaksasi dari sistem saraf parasimpatis yang memungkinkan tubuh untuk tidur.
-                </p>
-              </details>
-              <details>
-                <summary>Bagaimana cara memulai dengan TRE?</summary>
-                <p>
-                  Cara terbaik untuk memulai belajar TRE adalah dengan pendampingan oleh Pembimbing TRE bersertifikasi. Anda dapat memulai dengan TRE dengan menghadiri workshop TRE Indonesia, mendaftar dalam kursus offline maupun online. Kami juga memberikan akses seumur hidup ke sesi latihan dan pertemuan komunitas untuk mendukung perjalanan Anda.
-                </p>
-              </details>
-              <details>
-                <summary>Apakah saya perlu ikut seminar TRE dahulu?</summary>
-                <p>
-                  Seminar ini berfungsi untuk memberi informasi tentang dampak dan berbagai teori ilmiah yang bisa memberikan peserta mindset yang tepat untuk berlatih teknik TRE sehingga latihan yang dilakukan akan berdampak optimal.
-                </p>
-              </details>
-            </div>
-          </article>
         </div>
       </section>
 

@@ -1,15 +1,16 @@
+import { Link } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 
 function BelajarTrePage() {
   return (
-    <div className="belajar-tre-page">
+    <div className="belajar-tre-page belajar-tre-landing-page">
       <header
         className="belajar-tre-hero"
         style={{
           backgroundImage: `linear-gradient(120deg, rgba(9, 20, 30, 0.85) 0%, rgba(16, 33, 45, 0.6) 45%, rgba(32, 60, 80, 0.35) 100%), url(${process.env.PUBLIC_URL}/assets/home/belajartre.jpg)`,
         }}
       >
-        <NavBar />
+        <NavBar className="nav-mobile-surface-light" />
         <div className="belajar-tre-hero-inner">
           <h1>Belajar TRE</h1>
         </div>
@@ -24,40 +25,58 @@ function BelajarTrePage() {
             fisik Anda secara berkelanjutan.
           </p>
           <div className="belajar-tre-grid">
-            <article className="belajar-tre-card">
-              <div
-                className="belajar-tre-card-media"
-                style={{
-                  backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/TRE.jpg)`,
-                }}
-                role="img"
-                aria-label="TRE For Individuals"
-              />
-              <div className="belajar-tre-card-body">
-                <h3>TRE For Individuals</h3>
-                <span>Selengkapnya</span>
-                <button type="button" aria-label="Buka TRE For Individuals">
-                  →
-                </button>
-              </div>
-            </article>
-            <article className="belajar-tre-card">
-              <div
-                className="belajar-tre-card-media"
-                style={{
-                  backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/online.jpg)`,
-                }}
-                role="img"
-                aria-label="TRE Online di Rumah Aja"
-              />
-              <div className="belajar-tre-card-body">
-                <h3>TRE Online di Rumah Aja</h3>
-                <span>Selengkapnya</span>
-                <button type="button" aria-label="Buka TRE Online di Rumah Aja">
-                  →
-                </button>
-              </div>
-            </article>
+            <Link className="belajar-tre-card-link" to="/tre-individuals" aria-label="Buka TRE For Individuals">
+              <article className="belajar-tre-card">
+                <div
+                  className="belajar-tre-card-media"
+                  style={{
+                    backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/TRE.jpg)`,
+                  }}
+                  role="img"
+                  aria-label="TRE For Individuals"
+                />
+                <div className="belajar-tre-card-body">
+                  <h3>TRE For Individuals</h3>
+                  <span>Selengkapnya</span>
+                </div>
+              </article>
+            </Link>
+            <Link className="belajar-tre-card-link" to="/tre-online" aria-label="Buka TRE Online di Rumah Aja">
+              <article className="belajar-tre-card">
+                <div
+                  className="belajar-tre-card-media"
+                  style={{
+                    backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/online.jpg)`,
+                  }}
+                  role="img"
+                  aria-label="TRE Online di Rumah Aja"
+                />
+                <div className="belajar-tre-card-body">
+                  <h3>TRE Online di Rumah Aja</h3>
+                  <span>Selengkapnya</span>
+                </div>
+              </article>
+            </Link>
+            <Link
+              className="belajar-tre-card-link"
+              to="/kelas-sertifikasi-tre-provider"
+              aria-label="Buka Kelas Sertifikasi TRE Provider"
+            >
+              <article className="belajar-tre-card">
+                <div
+                  className="belajar-tre-card-media"
+                  style={{
+                    backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/certificate.png)`,
+                  }}
+                  role="img"
+                  aria-label="Kelas Sertifikasi TRE Provider"
+                />
+                <div className="belajar-tre-card-body">
+                  <h3>Kelas Sertifikasi TRE Provider</h3>
+                  <span>Selengkapnya</span>
+                </div>
+              </article>
+            </Link>
           </div>
         </div>
       </section>
