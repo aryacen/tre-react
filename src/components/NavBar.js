@@ -171,13 +171,6 @@ function NavBar({
               <NavLink className={dropdownLinkClass} to="/tre-online" onClick={() => closeMenu()}>
                 TRE Online Di Rumah Aja
               </NavLink>
-              <NavLink
-                className={dropdownLinkClass}
-                to="/kelas-sertifikasi-tre-provider"
-                onClick={() => closeMenu()}
-              >
-                Kelas Sertifikasi TRE Provider
-              </NavLink>
             </div>
           </div>
           <div className="nav-item">
@@ -259,6 +252,15 @@ function NavBar({
                 <span className="nav-contact-label">Nomor Telepon</span>
                 <a className="nav-contact-link nav-contact-phone" href="tel:0818901789">
                   0818-901-789
+                </a>
+              </div>
+              <div className="nav-contact-group">
+                <span className="nav-contact-label">Email</span>
+                <a
+                  className="nav-contact-link"
+                  href="mailto:support@treindonesia.com"
+                >
+                  support@treindonesia.com
                 </a>
               </div>
             </div>

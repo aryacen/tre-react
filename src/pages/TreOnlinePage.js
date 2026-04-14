@@ -90,7 +90,7 @@ function TreOnlinePage() {
               <div className="tre-city-action-card">
                 <div className="tre-city-price">
                   <span className="tre-city-price-old">Rp 598.000</span>
-                  <span className="tre-city-price-new">Rp 299.000</span>
+                  <span className="tre-city-price-new">Rp 199.000</span>
                 </div>
                 <Link className="tre-city-cta" to="/tre-individuals">
                   Daftar Seminar

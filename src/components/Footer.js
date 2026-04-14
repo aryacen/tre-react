@@ -56,14 +56,19 @@ function Footer() {
                   Agung, Tanjung Priok, North Jakarta City, Jakarta 14350
                 </a>
               </p>
-              <p>0818-901-789</p>
+              <p>
+                <a href="tel:0818901789">0818-901-789</a>
+              </p>
+              <p>
+                <a href="mailto:support@treindonesia.com">support@treindonesia.com</a>
+              </p>
             </div>
           </div>
           <div className="footer-col">
             <h3>Temukan Kami</h3>
             <div className="footer-social">
               <a
-                href="https://instagram.com/"
+                href="https://www.instagram.com/tre_indonesia"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Instagram"
@@ -92,7 +97,7 @@ function Footer() {
                 </svg>
               </a>
               <a
-                href="https://facebook.com/"
+                href="https://www.facebook.com/treindonesianid/"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Facebook"
@@ -105,7 +110,7 @@ function Footer() {
                 </svg>
               </a>
               <a
-                href="https://youtube.com/"
+                href="https://www.youtube.com/@TREIndonesia"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="YouTube"

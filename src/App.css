@@ -771,6 +771,23 @@ body.nav-menu-open .wa-widget {
   gap: 10px;
 }
 
+.form-status {
+  border-radius: 12px;
+  padding: 11px 13px;
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+
+.form-status.is-success {
+  background: rgba(33, 150, 83, 0.12);
+  color: #1f6d3e;
+}
+
+.form-status.is-error {
+  background: rgba(243, 122, 42, 0.1);
+  color: #b54810;
+}
+
 .hasil-form input {
   border: 2px solid #d3deea;
   background: #ffffff;
@@ -801,6 +818,14 @@ body.nav-menu-open .wa-widget {
 
 .hasil-form button:hover {
   background: linear-gradient(135deg, #f26f32 0%, #e24a24 100%);
+}
+
+.hasil-form button:disabled,
+.certification-form button:disabled {
+  cursor: wait;
+  opacity: 0.8;
+  transform: none;
+  box-shadow: none;
 }
 
 .hasil-test-actions {
@@ -7338,6 +7363,10 @@ body.nav-menu-open .wa-widget {
 }
 
 .certification-form-message {
+  grid-column: 1 / -1;
+}
+
+.certification-form-status {
   grid-column: 1 / -1;
 }
 

@@ -1,12 +1,40 @@
-import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { findCityBySlug } from '../data/treCityData';
 
 const SEMINAR_PRICE = 299000;
+const STATUS_COPY = {
+  success: {
+    title: 'Pembayaran sedang diverifikasi',
+    message:
+      'Anda sudah kembali dari halaman Midtrans. Status akhir pembayaran tetap akan mengikuti hasil verifikasi dari Midtrans.',
+  },
+  pending: {
+    title: 'Pembayaran masih menunggu',
+    message:
+      'Transaksi Anda masih berstatus pending. Silakan selesaikan pembayaran di Midtrans lalu kembali cek statusnya di halaman ini.',
+  },
+  failed: {
+    title: 'Pembayaran belum berhasil',
+    message:
+      'Transaksi tidak berhasil diselesaikan. Anda bisa mencoba lagi untuk membuat pembayaran baru.',
+  },
+  paid: {
+    title: 'Pembayaran berhasil',
+    message:
+      'Pembayaran Anda sudah diterima. Tim akan menindaklanjuti konfirmasi melalui email atau WhatsApp.',
+  },
+  challenge: {
+    title: 'Pembayaran perlu ditinjau',
+    message:
+      'Transaksi Anda sedang ditinjau oleh sistem pembayaran. Tim akan mengecek status akhirnya terlebih dahulu.',
+  },
+};
 
 function PaymentPage() {
   const { city: citySlug } = useParams();
+  const [searchParams] = useSearchParams();
   const city = findCityBySlug(citySlug);
   const [formValues, setFormValues] = useState({
     name: '',
@@ -16,11 +44,66 @@ function PaymentPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState('');
+  const [statusNote, setStatusNote] = useState('');
 
   const orderLabel = useMemo(() => {
     if (!city) return 'Seminar TRE';
     return `Seminar TRE ${city.name}`;
   }, [city]);
+
+  useEffect(() => {
+    const orderId = searchParams.get('order_id');
+    const redirectedTransactionStatus = searchParams.get('transaction_status');
+    const redirectedStatus = searchParams.get('status');
+
+    if (!orderId) {
+      if (redirectedStatus && STATUS_COPY[redirectedStatus]) {
+        setPaymentStatus(redirectedStatus);
+        setStatusNote(STATUS_COPY[redirectedStatus].message);
+      }
+      return undefined;
+    }
+
+    let isCancelled = false;
+
+    const loadStatus = async () => {
+      try {
+        const response = await fetch(
+          `/api/midtrans/transactions/${encodeURIComponent(orderId)}/status`
+        );
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(payload.message || 'Gagal mengambil status pembayaran.');
+        }
+
+        if (!isCancelled) {
+          setPaymentStatus(payload.status_label || redirectedTransactionStatus || redirectedStatus || '');
+          setStatusNote(
+            STATUS_COPY[payload.status_label]?.message ||
+              `Status pembayaran saat ini: ${
+                payload.transaction_status || redirectedTransactionStatus || 'tidak diketahui'
+              }.`
+          );
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setPaymentStatus(redirectedTransactionStatus || redirectedStatus || '');
+          setStatusNote(
+            error.message ||
+              'Status pembayaran belum bisa diambil. Silakan cek kembali beberapa saat lagi.'
+          );
+        }
+      }
+    };
+
+    loadStatus();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [searchParams]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -33,7 +116,7 @@ function PaymentPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/xendit/invoices', {
+      const response = await fetch('/api/midtrans/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -48,15 +131,15 @@ function PaymentPage() {
 
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
-        throw new Error(payload.message || 'Gagal membuat invoice.');
+        throw new Error(payload.message || 'Gagal membuat transaksi.');
       }
 
       const payload = await response.json();
-      if (!payload?.invoice_url) {
-        throw new Error('Invoice URL tidak ditemukan.');
+      if (!payload?.redirect_url) {
+        throw new Error('Redirect URL Midtrans tidak ditemukan.');
       }
 
-      window.location.href = payload.invoice_url;
+      window.location.href = payload.redirect_url;
     } catch (error) {
       setErrorMessage(error.message || 'Terjadi kesalahan. Coba lagi.');
       setIsSubmitting(false);
@@ -99,6 +182,13 @@ function PaymentPage() {
         <div className="payment-container">
           <form className="payment-form" onSubmit={handleSubmit}>
             <h2>Detail Pendaftar</h2>
+            {paymentStatus ? (
+              <div className="payment-error">
+                <strong>{STATUS_COPY[paymentStatus]?.title || 'Status pembayaran'}</strong>
+                <br />
+                {statusNote}
+              </div>
+            ) : null}
             <label>
               Nama lengkap *
               <input

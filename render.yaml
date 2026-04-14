@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: treindonesia
+    env: node
+    plan: free
+    buildCommand: npm install && npm --prefix server install && npm run build
+    startCommand: npm --prefix server start
+    autoDeploy: true

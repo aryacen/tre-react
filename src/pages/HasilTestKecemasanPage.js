@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import { submitSupportForm } from '../utils/formSubmission';
 
 const kategoriKecemasan = (nilai) => {
   if (nilai === 'Severe Anxiety') {
@@ -80,6 +82,71 @@ function HasilTestKecemasanPage() {
     : kategoriKecemasan(kecemasanParam);
   const depresiData = isDASS && depresiParam ? skalaDASS(depresiParam) : null;
   const stressData = isDASS && stressParam ? skalaDASS(stressParam) : null;
+  const [formValues, setFormValues] = useState({
+    name: '',
+    whatsapp: '',
+    email: '',
+    domicile: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formStatus, setFormStatus] = useState({ type: '', message: '' });
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormValues((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setFormStatus({ type: '', message: '' });
+
+    try {
+      await submitSupportForm({
+        formType: 'waiting-list-hasil-test',
+        subject: 'Waiting List Seminar dari Hasil Tes Gratis TRE Indonesia',
+        replyTo: formValues.email,
+        fields: [
+          { label: 'Nama Lengkap', value: formValues.name },
+          { label: 'Whatsapp', value: formValues.whatsapp },
+          { label: 'Email Aktif', value: formValues.email },
+          { label: 'Kota Domisili', value: formValues.domicile },
+          {
+            label: 'Sumber Form',
+            value: isDASS ? 'Hasil Tes Kesehatan Mental' : 'Hasil Tes Kecemasan',
+          },
+          {
+            label: 'Hasil Kecemasan',
+            value: kecemasanData.level,
+          },
+          ...(depresiData
+            ? [{ label: 'Hasil Depresi', value: depresiData.level }]
+            : []),
+          ...(stressData
+            ? [{ label: 'Hasil Stres', value: stressData.level }]
+            : []),
+        ],
+      });
+
+      setFormValues({
+        name: '',
+        whatsapp: '',
+        email: '',
+        domicile: '',
+      });
+      setFormStatus({
+        type: 'success',
+        message: 'Data Anda sudah terkirim. Tim TRE Indonesia akan menghubungi Anda segera.',
+      });
+    } catch (error) {
+      setFormStatus({
+        type: 'error',
+        message: error.message || 'Terjadi kesalahan saat mengirim form.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="simple-page hasil-test-page">
@@ -228,12 +295,50 @@ function HasilTestKecemasanPage() {
           </section>
 
           <section className="hasil-form-wrap">
-            <form className="hasil-form">
-              <input type="text" placeholder="Nama Lengkap" required />
-              <input type="text" placeholder="Whatsapp" required />
-              <input type="email" placeholder="Email Aktif" required />
-              <input type="text" placeholder="Kota Domisili" required />
-              <button type="submit">Saya Daftar Waiting List Seminar</button>
+            <form className="hasil-form" onSubmit={handleSubmit}>
+              <input
+                type="text"
+                name="name"
+                placeholder="Nama Lengkap"
+                value={formValues.name}
+                onChange={handleChange}
+                required
+              />
+              <input
+                type="text"
+                name="whatsapp"
+                placeholder="Whatsapp"
+                value={formValues.whatsapp}
+                onChange={handleChange}
+                required
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email Aktif"
+                value={formValues.email}
+                onChange={handleChange}
+                required
+              />
+              <input
+                type="text"
+                name="domicile"
+                placeholder="Kota Domisili"
+                value={formValues.domicile}
+                onChange={handleChange}
+                required
+              />
+              {formStatus.message ? (
+                <div
+                  className={`form-status${formStatus.type ? ` is-${formStatus.type}` : ''}`}
+                  role="status"
+                >
+                  {formStatus.message}
+                </div>
+              ) : null}
+              <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Mengirim...' : 'Saya Daftar Waiting List Seminar'}
+              </button>
             </form>
           </section>
 

@@ -1,4 +1,5 @@
 import { getTreProviderProfile } from './treProviderData';
+import { getUpcomingSeminar } from './treScheduleData';
 
 const cityRecords = [
   { name: 'Balikpapan', image: 'balikpapan.jpg', speakerName: 'Juli Wati Zeng' },
@@ -39,15 +40,21 @@ const cityRecords = [
 const slugifyCity = (cityName) =>
   cityName.trim().toLowerCase().replace(/\s+/g, '-');
 
-export const treCityData = cityRecords.map((city) => ({
-  name: city.name,
-  slug: slugifyCity(city.name),
-  image: city.image,
-  waktuDate: 'Segera diumumkan',
-  waktuTime: 'Segera diumumkan',
-  lokasi: 'Segera diumumkan',
-  speaker: getTreProviderProfile(city.speakerName),
-}));
+export const treCityData = cityRecords.map((city) => {
+  const slug = slugifyCity(city.name);
+  const upcomingSeminar = getUpcomingSeminar(slug);
+
+  return {
+    name: city.name,
+    slug,
+    image: city.image,
+    waktuDate: upcomingSeminar?.dateLabel || 'Segera diumumkan',
+    waktuTime: upcomingSeminar?.time || 'Segera diumumkan',
+    lokasi: upcomingSeminar?.location || 'Segera diumumkan',
+    timezone: upcomingSeminar?.timezone || '',
+    speaker: getTreProviderProfile(city.speakerName),
+  };
+});
 
 export const findCityBySlug = (slug) =>
   treCityData.find((city) => city.slug === slug);

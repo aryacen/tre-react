@@ -5,6 +5,10 @@ import { findCityBySlug } from '../data/treCityData';
 function TreIndividualCityPage() {
   const { city: citySlug } = useParams();
   const city = findCityBySlug(citySlug);
+  const waktuLabel =
+    city?.waktuDate === 'Segera diumumkan'
+      ? city.waktuDate
+      : `${city.waktuDate} | ${city.waktuTime}${city.timezone ? ` ${city.timezone}` : ''}`;
 
   if (!city) {
     return (
@@ -64,9 +68,7 @@ function TreIndividualCityPage() {
               <div className="tre-city-info-grid">
                 <div className="tre-city-info-card">
                   <span>Waktu</span>
-                  <strong>
-                    {city.waktuDate} | {city.waktuTime} WITA
-                  </strong>
+                  <strong>{waktuLabel}</strong>
                 </div>
                 <div className="tre-city-info-card">
                   <span>Lokasi</span>

@@ -57,26 +57,6 @@ function BelajarTrePage() {
                 </div>
               </article>
             </Link>
-            <Link
-              className="belajar-tre-card-link"
-              to="/kelas-sertifikasi-tre-provider"
-              aria-label="Buka Kelas Sertifikasi TRE Provider"
-            >
-              <article className="belajar-tre-card">
-                <div
-                  className="belajar-tre-card-media"
-                  style={{
-                    backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/certificate.png)`,
-                  }}
-                  role="img"
-                  aria-label="Kelas Sertifikasi TRE Provider"
-                />
-                <div className="belajar-tre-card-body">
-                  <h3>Kelas Sertifikasi TRE Provider</h3>
-                  <span>Selengkapnya</span>
-                </div>
-              </article>
-            </Link>
           </div>
         </div>
       </section>

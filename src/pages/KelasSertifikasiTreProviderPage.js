@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import NavBar from '../components/NavBar';
+import { submitSupportForm } from '../utils/formSubmission';
 
 const stages = [
   {
@@ -233,6 +235,64 @@ function RequirementCheck() {
 }
 
 function KelasSertifikasiTreProviderPage() {
+  const [formValues, setFormValues] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    motivation: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formStatus, setFormStatus] = useState({ type: '', message: '' });
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormValues((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setFormStatus({ type: '', message: '' });
+
+    try {
+      await submitSupportForm({
+        formType: 'kelas-sertifikasi',
+        subject: 'Pendaftaran Kelas Sertifikasi TRE Provider',
+        replyTo: formValues.email,
+        fields: [
+          { label: 'Nama Depan', value: formValues.firstName },
+          { label: 'Nama Belakang', value: formValues.lastName },
+          { label: 'Email Aktif', value: formValues.email },
+          { label: 'Nomor Telepon (WA)', value: formValues.phone },
+          {
+            label: 'Pengalaman Kerja / Motivasi Ikut Serta',
+            value: formValues.motivation,
+          },
+        ],
+      });
+
+      setFormValues({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        motivation: '',
+      });
+      setFormStatus({
+        type: 'success',
+        message: 'Pendaftaran Anda sudah terkirim. Tim TRE Indonesia akan segera menghubungi Anda.',
+      });
+    } catch (error) {
+      setFormStatus({
+        type: 'error',
+        message: error.message || 'Terjadi kesalahan saat mengirim data diri.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="certification-page">
       <header className="certification-hero">
@@ -404,22 +464,50 @@ function KelasSertifikasiTreProviderPage() {
                 baru.
               </p>
             </div>
-            <form className="certification-form">
+            <form className="certification-form" onSubmit={handleSubmit}>
               <label>
                 <span>Nama Depan *</span>
-                <input type="text" name="firstName" placeholder="John" />
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="John"
+                  value={formValues.firstName}
+                  onChange={handleChange}
+                  required
+                />
               </label>
               <label>
                 <span>Nama Belakang *</span>
-                <input type="text" name="lastName" placeholder="Doe" />
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Doe"
+                  value={formValues.lastName}
+                  onChange={handleChange}
+                  required
+                />
               </label>
               <label>
                 <span>Email Aktif *</span>
-                <input type="email" name="email" placeholder="john@example.com" />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="john@example.com"
+                  value={formValues.email}
+                  onChange={handleChange}
+                  required
+                />
               </label>
               <label>
                 <span>Nomor Telepon (WA) *</span>
-                <input type="tel" name="phone" placeholder="0812..." />
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="0812..."
+                  value={formValues.phone}
+                  onChange={handleChange}
+                  required
+                />
               </label>
               <label className="certification-form-message">
                 <span>Pengalaman Kerja / Motivasi Ikut Serta *</span>
@@ -427,9 +515,22 @@ function KelasSertifikasiTreProviderPage() {
                   name="motivation"
                   rows="5"
                   placeholder="Ceritakan singkat latar belakang Anda..."
+                  value={formValues.motivation}
+                  onChange={handleChange}
+                  required
                 />
               </label>
-              <button type="submit">Kirim Data Diri Sekarang</button>
+              {formStatus.message ? (
+                <div
+                  className={`form-status${formStatus.type ? ` is-${formStatus.type}` : ''} certification-form-status`}
+                  role="status"
+                >
+                  {formStatus.message}
+                </div>
+              ) : null}
+              <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Mengirim...' : 'Kirim Data Diri Sekarang'}
+              </button>
             </form>
           </div>
         </div>
