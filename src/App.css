@@ -10880,3 +10880,208 @@ body.events-lightbox-open {
     font-size: 0.84rem;
   }
 }
+
+@media (hover: none), (pointer: coarse) {
+  .nav-link,
+  .dropdown-link,
+  .btn,
+  .testimonial-filter,
+  .testimonial-library-card-action,
+  .schedule-nav,
+  .schedule-card,
+  .schedule-card::before,
+  .schedule-arrow,
+  .blog-card,
+  .blog-link,
+  .cta-button,
+  .footer-links a,
+  .footer-social a,
+  .scroll-top,
+  .wa-cta,
+  .tre-city-back,
+  .tre-city-cta,
+  .payment-submit,
+  .belajar-tre-card,
+  .belajar-tre-card::before,
+  .belajar-tre-card-media::after,
+  .belajar-tre-card-body,
+  .certification-primary-btn,
+  .certification-secondary-btn,
+  .events-card-link,
+  .events-detail-register,
+  .events-detail-cta,
+  .events-detail-nav-button,
+  .events-lightbox-nav,
+  .events-lightbox-close {
+    transition-duration: 0s !important;
+  }
+
+  .nav-link:hover {
+    color: #eaf4ff;
+  }
+
+  .nav.nav-surface-light .nav-link:hover,
+  .events-page .nav.nav-surface-light .nav-link:hover,
+  .events-detail-page .nav.nav-surface-light .nav-link:hover {
+    color: #21354d;
+  }
+
+  .dropdown-link:hover,
+  .nav.nav-surface-light .dropdown-link:hover,
+  .events-page .nav.nav-surface-light .dropdown-link:hover,
+  .events-detail-page .nav.nav-surface-light .dropdown-link:hover {
+    background: transparent;
+  }
+
+  .btn:hover,
+  .schedule-nav:hover,
+  .tre-city-cta:hover,
+  .payment-submit:hover,
+  .certification-primary-btn:hover,
+  .certification-secondary-btn:hover,
+  .events-card-link:hover,
+  .events-detail-register:hover,
+  .events-detail-cta:hover,
+  .scroll-top:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-accent:hover {
+    background: #f37a2a;
+    color: #ffffff;
+  }
+
+  .testimonials-header .btn-accent:hover,
+  .testimonials-cta .btn-accent:hover,
+  .schedule-section .btn-accent:hover {
+    background: linear-gradient(180deg, #1f4f7a 0%, #163d60 100%);
+    color: #f5fbff;
+  }
+
+  .testimonial-filter:hover {
+    border-color: rgba(15, 37, 52, 0.18);
+    transform: none;
+  }
+
+  .testimonial-list-page .testimonial-filter:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(140, 169, 193, 0.55);
+  }
+
+  .testimonial-library-card-action:hover {
+    color: #e13b2b;
+  }
+
+  .testimonial-library-card-action:hover::after {
+    transform: none;
+  }
+
+  .testimonial-library-card-action:hover::before {
+    background: rgba(225, 59, 43, 0.5);
+    transform: none;
+  }
+
+  .testimonial-library-card-body-link:hover h3,
+  .artikel-library-card-link:hover .testimonial-library-card-action {
+    color: #0f2534;
+  }
+
+  .artikel-library-card-link:hover .testimonial-library-card-action::after {
+    transform: none;
+  }
+
+  .artikel-library-card-link:hover .testimonial-library-card-action::before {
+    background: rgba(225, 59, 43, 0.5);
+    transform: none;
+  }
+
+  .testimonial-link:hover {
+    color: #f40000;
+  }
+
+  .test-link:hover,
+  .blog-card:hover .blog-link {
+    color: #f37a2a;
+  }
+
+  .blog-card:hover {
+    transform: none;
+    box-shadow: 0 14px 30px rgba(12, 28, 46, 0.12);
+  }
+
+  .cta-button:hover {
+    background: transparent;
+  }
+
+  .footer-links a:hover {
+    color: #314a5f;
+  }
+
+  .footer-social a:hover {
+    background: transparent;
+    border-color: rgba(13, 59, 103, 0.3);
+  }
+
+  .wa-cta:hover {
+    background: #25d366;
+  }
+
+  .tre-city-back:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f6fbff;
+  }
+
+  .schedule-card:hover {
+    box-shadow: 0 14px 30px rgba(12, 28, 46, 0.18);
+  }
+
+  .schedule-card:hover::before {
+    background: linear-gradient(180deg, rgba(8, 16, 24, 0) 35%, rgba(8, 16, 24, 0.75) 100%);
+  }
+
+  .schedule-card:hover .schedule-arrow {
+    transform: none;
+    background: #ffffff;
+    color: #0d3b67;
+    box-shadow: none;
+  }
+
+  .belajar-tre-card-link:hover .belajar-tre-card,
+  .tes-gratis-card-link-wrap:hover .belajar-tre-card {
+    box-shadow: 0 18px 36px rgba(12, 28, 46, 0.12);
+    border-color: rgba(255, 255, 255, 0);
+  }
+
+  .belajar-tre-card-link:hover .belajar-tre-card::before,
+  .tes-gratis-card-link-wrap:hover .belajar-tre-card::before {
+    transform: scaleX(0.32);
+    opacity: 0;
+  }
+
+  .belajar-tre-card-link:hover .belajar-tre-card-media::after,
+  .tes-gratis-card-link-wrap:hover .belajar-tre-card-media::after {
+    background: linear-gradient(180deg, rgba(9, 16, 24, 0.08) 0%, rgba(9, 16, 24, 0.68) 100%);
+  }
+
+  .belajar-tre-card-link:hover .belajar-tre-card-body,
+  .tes-gratis-card-link-wrap:hover .belajar-tre-card-body {
+    background: linear-gradient(180deg, rgba(6, 12, 18, 0) 0%, rgba(6, 12, 18, 0.72) 55%, rgba(6, 12, 18, 0.9) 100%);
+  }
+
+  .belajar-tre-card-link:hover .belajar-tre-card-body span,
+  .tes-gratis-card-link-wrap:hover .belajar-tre-card-body span {
+    color: rgba(221, 233, 245, 0.8);
+  }
+
+  .events-detail-nav-button:hover,
+  .events-lightbox-nav:hover,
+  .events-lightbox-close:hover {
+    background: rgba(9, 21, 33, 0.72);
+    transform: none;
+  }
+
+  .events-lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+}
