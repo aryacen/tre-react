@@ -44,9 +44,9 @@ export const pastEvents = [
     attendeesDetail: '85 peserta',
     description: '',
     about: [
-      'Workshop ini menghadirkan momen berharga bagi komunitas TRE Indonesia untuk belajar langsung dari <strong>Dr. David Berceli</strong>. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      'Selama dua hari penuh, peserta diajak mendalami prinsip-prinsip pelepasan stres dan trauma berbasis tubuh melalui sesi praktik, diskusi, dan refleksi bersama. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      'Acara ini menjadi salah satu tonggak penting dalam perkembangan komunitas TRE Indonesia dan memperkuat jejaring praktisi yang terus bertumbuh hingga hari ini. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      'Workshop ini menghadirkan momen berharga bagi komunitas TRE Indonesia untuk belajar langsung dari <strong>Dr. David Berceli</strong>. ',
+      'Selama dua hari penuh, peserta diajak mendalami prinsip-prinsip pelepasan stres dan trauma berbasis tubuh melalui sesi praktik, diskusi, dan refleksi bersama.',
+      'Acara ini menjadi salah satu tonggak penting dalam perkembangan komunitas TRE Indonesia dan memperkuat jejaring praktisi yang terus bertumbuh hingga hari ini.',
     ],
     image: '/assets/home/david2018.JPG',
     gallery: [
@@ -68,13 +68,16 @@ export const pastEvents = [
     description:
       '',
     about: [
-      'Pelatihan ini dirancang untuk memperdalam pemahaman peserta tentang regulasi tubuh dan respon sistem saraf. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      'Melalui sesi teori dan praktik, peserta mengeksplorasi cara membangun rasa aman, stabil, dan hadir di dalam tubuh. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      'Acara ini juga menjadi ruang belajar bersama bagi komunitas untuk berbagi pengalaman, wawasan, dan proses integrasi. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      'Pelatihan ini dirancang untuk memperdalam pemahaman peserta tentang regulasi tubuh dan respon sistem saraf.',
+      'Melalui sesi teori dan praktik, peserta mengeksplorasi cara membangun rasa aman, stabil, dan hadir di dalam tubuh.',
+      'Acara ini juga menjadi ruang belajar bersama bagi komunitas untuk berbagi pengalaman, wawasan, dan proses integrasi.',
     ],
-    image: '/assets/home/events.jpg',
-    gallery: ['/assets/home/events.jpg'],
-    registerUrl: '/assets/home/faq.jpg',
+    image: '/assets/home/events.JPG',
+    gallery: [
+      '/assets/home/events.JPG',
+      '/assets/home/david2025.jpeg',
+      '/assets/home/david2025_2.jpeg'],
+    registerUrl: '/assets/home/faq.JPG',
     showCta: false,
   },
 ];
