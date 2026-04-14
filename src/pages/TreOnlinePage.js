@@ -92,7 +92,7 @@ function TreOnlinePage() {
                   <span className="tre-city-price-old">Rp 598.000</span>
                   <span className="tre-city-price-new">Rp 199.000</span>
                 </div>
-                <Link className="tre-city-cta" to="/tre-individuals">
+                <Link className="tre-city-cta" to="/tre-online/payment">
                   Daftar Seminar
                 </Link>
               </div>

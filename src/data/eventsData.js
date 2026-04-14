@@ -23,12 +23,14 @@ export const upcomingEvent = {
     '/assets/home/1000_5.jpg',
     '/assets/home/1000_6.jpg',
     '/assets/home/1000_7.jpg',
-    '/assets/home/1000_8.jpg',
     '/assets/home/1000_9.jpg',
     '/assets/home/1000_10.jpg',
   ],
   registerUrl: '/assets/home/1000.pdf',
   ctaLabel: 'Register Now',
+  showCta: true,
+  whatsappMessage:
+    'Halo, saya ingin mengetahui informasi lebih lanjut seputar acara workshop TRE angkatan 1000.',
 };
 
 export const pastEvents = [
@@ -49,7 +51,7 @@ export const pastEvents = [
     image: '/assets/home/david2018.jpg',
     gallery: ['/assets/home/david2018.jpg'],
     registerUrl: '/assets/home/david2018.jpg',
-    ctaLabel: 'Lihat Dokumentasi',
+    showCta: false,
   },
   {
     slug: 'tre-workshop-dr-david-2025',
@@ -69,7 +71,7 @@ export const pastEvents = [
     image: '/assets/home/events.jpg',
     gallery: ['/assets/home/events.jpg'],
     registerUrl: '/assets/home/faq.jpg',
-    ctaLabel: 'Lihat Dokumentasi',
+    showCta: false,
   },
 ];
 

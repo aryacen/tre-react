@@ -71,10 +71,11 @@ function EventCard({ event, featured = false, status, to }) {
         aria-label={event.title}
         role="img"
       >
-        <div className="events-card-badges">
-          {status ? <span className="events-card-badge events-card-badge-muted">{status}</span> : null}
-          <span className="events-card-badge">{event.attendees}</span>
-        </div>
+        {status ? (
+          <div className="events-card-badges">
+            <span className="events-card-badge events-card-badge-muted">{status}</span>
+          </div>
+        ) : null}
       </div>
       <div className="events-card-body">
         <h3>{event.title}</h3>

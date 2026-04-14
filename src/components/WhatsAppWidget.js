@@ -1,13 +1,11 @@
 import { useState } from 'react';
+import { buildWhatsAppLink } from '../utils/whatsapp';
 
 function WhatsAppWidget() {
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
-  const whatsappPhone = '62818901789';
   const whatsappMessage =
     'Halo, saya ingin mengetahui informasi lebih lanjut seputar acara seminar yang TRE Indonesia tawarkan.';
-  const whatsappLink = `https://api.whatsapp.com/send?phone=${whatsappPhone}&text=${encodeURIComponent(
-    whatsappMessage
-  )}`;
+  const whatsappLink = buildWhatsAppLink(whatsappMessage);
 
   return (
     <div className="wa-widget">

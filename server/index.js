@@ -26,7 +26,8 @@ const MIDTRANS_SNAP_BASE_URL = MIDTRANS_IS_PRODUCTION
 const MIDTRANS_API_BASE_URL = MIDTRANS_IS_PRODUCTION
   ? 'https://api.midtrans.com'
   : 'https://api.sandbox.midtrans.com';
-const SEMINAR_PRICE = 299000;
+const DEFAULT_SEMINAR_PRICE = 299000;
+const ONLINE_SEMINAR_SLUG = 'online';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const frontendBuildPath = path.resolve(__dirname, '../build');
@@ -55,6 +56,22 @@ const parseJsonSafely = (rawBody) => {
   } catch {
     return { raw: rawBody };
   }
+};
+
+const getSeminarConfig = (city, cityName) => {
+  if (city === ONLINE_SEMINAR_SLUG) {
+    return {
+      label: cityName || 'Seminar TRE Online',
+      price: 199000,
+      paymentPath: '/tre-online/payment',
+    };
+  }
+
+  return {
+    label: cityName || `Seminar TRE ${city}`,
+    price: DEFAULT_SEMINAR_PRICE,
+    paymentPath: `/tre-individuals/${city}/payment`,
+  };
 };
 
 const escapeHtml = (value) =>
@@ -229,6 +246,7 @@ const verifyMidtransSignature = ({
 app.post('/api/midtrans/transactions', async (req, res) => {
   try {
     const { city, cityName, name, email, whatsapp, domicile } = req.body || {};
+    const seminar = getSeminarConfig(city, cityName);
 
     if (!city || !name || !email || !whatsapp || !domicile) {
       return res.status(400).json({ message: 'Semua field wajib diisi.' });
@@ -242,14 +260,14 @@ app.post('/api/midtrans/transactions', async (req, res) => {
     const transactionPayload = {
       transaction_details: {
         order_id: orderId,
-        gross_amount: SEMINAR_PRICE,
+        gross_amount: seminar.price,
       },
       item_details: [
         {
           id: `seminar-${city}`,
-          price: SEMINAR_PRICE,
+          price: seminar.price,
           quantity: 1,
-          name: `Seminar TRE ${cityName || city}`,
+          name: seminar.label,
         },
       ],
       customer_details: {
@@ -260,8 +278,8 @@ app.post('/api/midtrans/transactions', async (req, res) => {
       custom_field1: city,
       custom_field2: domicile,
       callbacks: {
-        finish: `${FRONTEND_BASE_URL}/tre-individuals/${city}/payment?status=success`,
-        error: `${FRONTEND_BASE_URL}/tre-individuals/${city}/payment?status=failed`,
+        finish: `${FRONTEND_BASE_URL}${seminar.paymentPath}?status=success`,
+        error: `${FRONTEND_BASE_URL}${seminar.paymentPath}?status=failed`,
       },
       expiry: {
         unit: 'hours',
@@ -297,14 +315,14 @@ app.post('/api/midtrans/transactions', async (req, res) => {
       try {
         await sendSupportEmail({
           formType: 'payment-registration',
-          subject: `Pendaftaran Pembayaran Seminar TRE ${cityName || city}`,
+          subject: `Pendaftaran Pembayaran ${seminar.label}`,
           replyTo: email,
           fields: [
             { label: 'Nama Lengkap', value: name },
             { label: 'Email', value: email },
             { label: 'Whatsapp', value: whatsapp },
             { label: 'Kota Domisili', value: domicile },
-            { label: 'Kota Seminar', value: cityName || city },
+            { label: 'Seminar', value: seminar.label },
             { label: 'Order ID', value: orderId },
           ],
         });

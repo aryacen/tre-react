@@ -67,6 +67,10 @@ function App() {
         <Route path="/tre-individuals/:city" element={<TreIndividualCityPage />} />
         <Route path="/tre-individuals/:city/payment" element={<PaymentPage />} />
         <Route path="/tre-online" element={<TreOnlinePage />} />
+        <Route
+          path="/tre-online/payment"
+          element={<PaymentPage seminarSlug="online" />}
+        />
         <Route path="/belajar-tre" element={<BelajarTrePage />} />
         <Route path="/faq" element={<FaqPage />} />
         <Route

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { findEventBySlug } from '../data/eventsData';
+import { buildWhatsAppLink } from '../utils/whatsapp';
 
 function EventMetaIcon({ type }) {
   if (type === 'date') {
@@ -45,21 +46,6 @@ function EventMetaIcon({ type }) {
     );
   }
 
-  if (type === 'attendees') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path
-          d="M8.5 11.5a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm7 0a2.5 2.5 0 1 0-2.5-2.5 2.5 2.5 0 0 0 2.5 2.5ZM3.5 19a5 5 0 0 1 10 0M13.5 19a4 4 0 0 1 7 0"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path
@@ -83,6 +69,10 @@ function EventDetailPage() {
   const galleryImages =
     event?.gallery?.length > 0 ? event.gallery : event?.image ? [event.image] : [];
   const [activeIndex, setActiveIndex] = useState(0);
+  const showCta = event?.showCta !== false;
+  const registerLink = event?.whatsappMessage
+    ? buildWhatsAppLink(event.whatsappMessage)
+    : `${process.env.PUBLIC_URL}${event?.registerUrl || ''}`;
 
   useEffect(() => {
     setActiveIndex(0);
@@ -220,21 +210,19 @@ function EventDetailPage() {
                 <EventMetaIcon type="location" />
                 <span>{event.location}</span>
               </div>
-              <div className="events-detail-meta-chip">
-                <EventMetaIcon type="attendees" />
-                <span>{event.attendeesDetail}</span>
-              </div>
             </div>
           </div>
 
-          <a
-            className="events-detail-register"
-            href={`${process.env.PUBLIC_URL}${event.registerUrl}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {event.ctaLabel || 'Register Now'}
-          </a>
+          {showCta ? (
+            <a
+              className="events-detail-register"
+              href={registerLink}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {event.ctaLabel || 'Register Now'}
+            </a>
+          ) : null}
         </div>
 
         <div className="events-detail-hero-image">
@@ -311,19 +299,17 @@ function EventDetailPage() {
                   <dt>Location</dt>
                   <dd>{event.location}</dd>
                 </div>
-                <div>
-                  <dt>Attendees</dt>
-                  <dd>{event.attendeesDetail}</dd>
-                </div>
               </dl>
-              <a
-                className="events-detail-cta"
-                href={`${process.env.PUBLIC_URL}${event.registerUrl}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {event.ctaLabel || 'Register Now'}
-              </a>
+              {showCta ? (
+                <a
+                  className="events-detail-cta"
+                  href={registerLink}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {event.ctaLabel || 'Register Now'}
+                </a>
+              ) : null}
             </div>
 
             <div className="events-detail-panel">

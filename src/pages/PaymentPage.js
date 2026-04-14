@@ -3,7 +3,15 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { findCityBySlug } from '../data/treCityData';
 
-const SEMINAR_PRICE = 299000;
+const DEFAULT_SEMINAR_PRICE = 299000;
+const ONLINE_SEMINAR_SLUG = 'online';
+const ONLINE_SEMINAR = {
+  slug: ONLINE_SEMINAR_SLUG,
+  name: 'Seminar TRE Online',
+  price: 199000,
+  backLink: '/tre-online',
+  backLabel: 'Kembali ke TRE Online',
+};
 const STATUS_COPY = {
   success: {
     title: 'Pembayaran sedang diverifikasi',
@@ -32,8 +40,9 @@ const STATUS_COPY = {
   },
 };
 
-function PaymentPage() {
-  const { city: citySlug } = useParams();
+function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
+  const { city: routeCitySlug } = useParams();
+  const citySlug = forcedSeminarSlug || routeCitySlug;
   const [searchParams] = useSearchParams();
   const city = findCityBySlug(citySlug);
   const [formValues, setFormValues] = useState({
@@ -47,10 +56,30 @@ function PaymentPage() {
   const [paymentStatus, setPaymentStatus] = useState('');
   const [statusNote, setStatusNote] = useState('');
 
+  const seminar = useMemo(() => {
+    if (city) {
+      return {
+        slug: city.slug,
+        name: `Seminar TRE ${city.name}`,
+        price: DEFAULT_SEMINAR_PRICE,
+        backLink: '/tre-individuals',
+        backLabel: 'Lihat semua kota',
+      };
+    }
+
+    if (citySlug === ONLINE_SEMINAR_SLUG) {
+      return ONLINE_SEMINAR;
+    }
+
+    return null;
+  }, [city, citySlug]);
+
   const orderLabel = useMemo(() => {
-    if (!city) return 'Seminar TRE';
-    return `Seminar TRE ${city.name}`;
-  }, [city]);
+    if (!seminar) return 'Seminar TRE';
+    return seminar.name;
+  }, [seminar]);
+
+  const seminarPrice = seminar?.price || DEFAULT_SEMINAR_PRICE;
 
   useEffect(() => {
     const orderId = searchParams.get('order_id');
@@ -121,7 +150,7 @@ function PaymentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           city: citySlug,
-          cityName: city?.name,
+          cityName: seminar?.name,
           name: formValues.name,
           email: formValues.email,
           whatsapp: formValues.whatsapp,
@@ -146,16 +175,16 @@ function PaymentPage() {
     }
   };
 
-  if (!city) {
+  if (!seminar) {
     return (
       <div className="payment-page">
         <header className="payment-hero">
           <NavBar />
           <div className="payment-hero-inner">
-            <h1>Kota tidak ditemukan</h1>
-            <p>Silakan kembali ke daftar kota seminar TRE.</p>
-            <Link className="payment-back" to="/tre-individuals">
-              Lihat semua kota
+            <h1>Seminar tidak ditemukan</h1>
+            <p>Silakan kembali ke halaman seminar TRE.</p>
+            <Link className="payment-back" to="/belajar-tre">
+              Lihat semua layanan
             </Link>
           </div>
         </header>
@@ -245,11 +274,11 @@ function PaymentPage() {
             <h2>Rincian Pesanan</h2>
             <div className="payment-summary-row">
               <span>{orderLabel}</span>
-              <span>Rp {SEMINAR_PRICE.toLocaleString('id-ID')}</span>
+              <span>Rp {seminarPrice.toLocaleString('id-ID')}</span>
             </div>
             <div className="payment-summary-total">
               <span>Total</span>
-              <strong>Rp {SEMINAR_PRICE.toLocaleString('id-ID')}</strong>
+              <strong>Rp {seminarPrice.toLocaleString('id-ID')}</strong>
             </div>
             <p className="payment-summary-note">
               Setelah pembayaran berhasil, Anda akan menerima konfirmasi melalui email dan WhatsApp.
