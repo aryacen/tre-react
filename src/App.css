@@ -4385,19 +4385,19 @@ body.nav-menu-open .wa-widget {
   }
 
   .wa-fab {
-    width: 42px;
-    height: 42px;
+    width: 59px;
+    height: 59px;
     border-width: 2px;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
   }
 
   .wa-fab svg {
-    width: 22px;
-    height: 22px;
+    width: 31px;
+    height: 31px;
   }
 
   .wa-panel {
-    bottom: 50px;
+    bottom: 67px;
     width: 160px;
     border-radius: 12px;
     box-shadow: 0 10px 22px rgba(18, 38, 24, 0.16);
@@ -7545,6 +7545,41 @@ body.nav-menu-open .wa-widget {
   }
 
   .tre-city-hero-inner {
+    display: none;
+  }
+
+  .payment-hero {
+    min-height: 0;
+    padding-bottom: 0;
+  }
+
+  .payment-hero-inner {
+    display: none;
+  }
+
+  .privacy-hero {
+    min-height: 0;
+  }
+
+  .privacy-hero::before {
+    display: none;
+  }
+
+  .privacy-hero-inner {
+    display: none;
+  }
+
+  .tes-gratis-page .belajar-tre-hero {
+    min-height: 0;
+    padding-bottom: 0;
+    background: transparent !important;
+  }
+
+  .tes-gratis-page .belajar-tre-hero::before {
+    display: none;
+  }
+
+  .tes-gratis-page .belajar-tre-hero-inner {
     display: none;
   }
 
