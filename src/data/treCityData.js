@@ -40,21 +40,23 @@ const cityRecords = [
 const slugifyCity = (cityName) =>
   cityName.trim().toLowerCase().replace(/\s+/g, '-');
 
-export const treCityData = cityRecords.map((city) => {
-  const slug = slugifyCity(city.name);
-  const upcomingSeminar = getUpcomingSeminar(slug);
+export const treCityData = cityRecords
+  .map((city) => {
+    const slug = slugifyCity(city.name);
+    const upcomingSeminar = getUpcomingSeminar(slug);
 
-  return {
-    name: city.name,
-    slug,
-    image: city.image,
-    waktuDate: upcomingSeminar?.dateLabel || 'Segera diumumkan',
-    waktuTime: upcomingSeminar?.time || 'Segera diumumkan',
-    lokasi: upcomingSeminar?.location || 'Segera diumumkan',
-    timezone: upcomingSeminar?.timezone || '',
-    speaker: getTreProviderProfile(city.speakerName),
-  };
-});
+    return {
+      name: city.name,
+      slug,
+      image: city.image,
+      waktuDate: upcomingSeminar?.dateLabel || 'Segera diumumkan',
+      waktuTime: upcomingSeminar?.time || 'Segera diumumkan',
+      lokasi: upcomingSeminar?.location || 'Segera diumumkan',
+      timezone: upcomingSeminar?.timezone || '',
+      speaker: getTreProviderProfile(city.speakerName),
+    };
+  })
+  .sort((leftCity, rightCity) => leftCity.name.localeCompare(rightCity.name, 'id'));
 
 export const findCityBySlug = (slug) =>
   treCityData.find((city) => city.slug === slug);

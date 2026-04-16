@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import NavBar from '../components/NavBar';
 
 const faqItems = [
@@ -54,6 +55,12 @@ const faqItems = [
 ];
 
 function FaqPage() {
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
+
+  const handleFaqToggle = (index) => {
+    setOpenFaqIndex((currentIndex) => (currentIndex === index ? null : index));
+  };
+
   return (
     <div className="testimonial-page faq-page">
       <header
@@ -73,9 +80,16 @@ function FaqPage() {
       <section className="tre-about-section faq-content-section">
         <div className="tre-about-container faq-content-container">
           <div className="tre-city-faq-list faq-list">
-            {faqItems.map((item) => (
-              <details key={item.question}>
-                <summary>{item.question}</summary>
+            {faqItems.map((item, index) => (
+              <details key={item.question} open={openFaqIndex === index}>
+                <summary
+                  onClick={(event) => {
+                    event.preventDefault();
+                    handleFaqToggle(index);
+                  }}
+                >
+                  {item.question}
+                </summary>
                 <p>{item.answer}</p>
               </details>
             ))}

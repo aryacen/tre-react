@@ -5,6 +5,12 @@ import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+  PAYMENT_COUPON_LOOKUP,
+  PAYMENT_METHOD_LOOKUP,
+  getCouponDiscount,
+  normalizeCouponCode,
+} from '../src/data/paymentConfig.js';
 
 dotenv.config();
 
@@ -245,11 +251,40 @@ const verifyMidtransSignature = ({
 
 app.post('/api/midtrans/transactions', async (req, res) => {
   try {
-    const { city, cityName, name, email, whatsapp, domicile } = req.body || {};
+    const {
+      city,
+      cityName,
+      name,
+      email,
+      whatsapp,
+      domicile,
+      paymentMethod,
+      couponCode,
+    } = req.body || {};
     const seminar = getSeminarConfig(city, cityName);
+    const normalizedCouponCode = normalizeCouponCode(couponCode);
+    const appliedCoupon = normalizedCouponCode
+      ? PAYMENT_COUPON_LOOKUP[normalizedCouponCode]
+      : null;
+    const selectedPaymentMethod = paymentMethod
+      ? PAYMENT_METHOD_LOOKUP[paymentMethod]
+      : null;
+    const grossAmount = seminar.price - getCouponDiscount(appliedCoupon, seminar.price);
 
     if (!city || !name || !email || !whatsapp || !domicile) {
       return res.status(400).json({ message: 'Semua field wajib diisi.' });
+    }
+
+    if (paymentMethod && !selectedPaymentMethod) {
+      return res.status(400).json({ message: 'Metode pembayaran tidak valid.' });
+    }
+
+    if (couponCode && !appliedCoupon) {
+      return res.status(400).json({ message: 'Kupon tidak valid atau belum aktif.' });
+    }
+
+    if (grossAmount <= 0) {
+      return res.status(400).json({ message: 'Total pembayaran harus lebih besar dari Rp 0.' });
     }
 
     if (!MIDTRANS_SERVER_KEY) {
@@ -260,12 +295,12 @@ app.post('/api/midtrans/transactions', async (req, res) => {
     const transactionPayload = {
       transaction_details: {
         order_id: orderId,
-        gross_amount: seminar.price,
+        gross_amount: grossAmount,
       },
       item_details: [
         {
           id: `seminar-${city}`,
-          price: seminar.price,
+          price: grossAmount,
           quantity: 1,
           name: seminar.label,
         },
@@ -286,6 +321,14 @@ app.post('/api/midtrans/transactions', async (req, res) => {
         duration: 24,
       },
     };
+
+    if (appliedCoupon) {
+      transactionPayload.custom_field3 = appliedCoupon.code;
+    }
+
+    if (selectedPaymentMethod?.enabledPayments?.length) {
+      transactionPayload.enabled_payments = selectedPaymentMethod.enabledPayments;
+    }
 
     const response = await fetch(`${MIDTRANS_SNAP_BASE_URL}/snap/v1/transactions`, {
       method: 'POST',
@@ -324,6 +367,14 @@ app.post('/api/midtrans/transactions', async (req, res) => {
             { label: 'Kota Domisili', value: domicile },
             { label: 'Seminar', value: seminar.label },
             { label: 'Order ID', value: orderId },
+            { label: 'Metode Pembayaran', value: selectedPaymentMethod?.label || 'Default Snap' },
+            {
+              label: 'Kupon',
+              value: appliedCoupon
+                ? `${appliedCoupon.code} (-${getCouponDiscount(appliedCoupon, seminar.price).toLocaleString('id-ID')})`
+                : 'Tidak ada',
+            },
+            { label: 'Total', value: grossAmount.toLocaleString('id-ID') },
           ],
         });
       } catch (mailError) {

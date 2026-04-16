@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { findCityBySlug } from '../data/treCityData';
+import {
+  PAYMENT_COUPON_LOOKUP,
+  getCouponDiscount,
+  normalizeCouponCode,
+} from '../data/paymentConfig';
 
 const DEFAULT_SEMINAR_PRICE = 299000;
 const ONLINE_SEMINAR_SLUG = 'online';
@@ -39,6 +44,7 @@ const STATUS_COPY = {
       'Transaksi Anda sedang ditinjau oleh sistem pembayaran. Tim akan mengecek status akhirnya terlebih dahulu.',
   },
 };
+const formatCurrency = (amount) => `Rp ${amount.toLocaleString('id-ID')}`;
 
 function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
   const { city: routeCitySlug } = useParams();
@@ -55,6 +61,11 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
   const [errorMessage, setErrorMessage] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('');
   const [statusNote, setStatusNote] = useState('');
+  const [isOrderRemoved, setIsOrderRemoved] = useState(false);
+  const [isCouponOpen, setIsCouponOpen] = useState(false);
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCouponCode, setAppliedCouponCode] = useState('');
+  const [couponMessage, setCouponMessage] = useState('');
 
   const seminar = useMemo(() => {
     if (city) {
@@ -80,6 +91,16 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
   }, [seminar]);
 
   const seminarPrice = seminar?.price || DEFAULT_SEMINAR_PRICE;
+  const subtotal = isOrderRemoved ? 0 : seminarPrice;
+  const appliedCoupon = useMemo(
+    () => PAYMENT_COUPON_LOOKUP[appliedCouponCode] || null,
+    [appliedCouponCode]
+  );
+  const couponDiscount = useMemo(
+    () => getCouponDiscount(appliedCoupon, subtotal),
+    [appliedCoupon, subtotal]
+  );
+  const totalAmount = Math.max(0, subtotal - couponDiscount);
 
   useEffect(() => {
     const orderId = searchParams.get('order_id');
@@ -139,9 +160,53 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
     setFormValues((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleCouponApply = () => {
+    const normalizedCode = normalizeCouponCode(couponInput);
+    const matchedCoupon = PAYMENT_COUPON_LOOKUP[normalizedCode];
+
+    if (!normalizedCode) {
+      setAppliedCouponCode('');
+      setCouponMessage('Masukkan kode kupon terlebih dahulu.');
+      return;
+    }
+
+    if (!matchedCoupon) {
+      setAppliedCouponCode('');
+      setCouponMessage('Kupon tidak valid atau belum aktif.');
+      return;
+    }
+
+    setAppliedCouponCode(normalizedCode);
+    setCouponMessage(`Kupon ${normalizedCode} berhasil diterapkan.`);
+  };
+
+  const handleRemoveItem = () => {
+    setIsOrderRemoved(true);
+    setAppliedCouponCode('');
+    setCouponInput('');
+    setCouponMessage('');
+    setErrorMessage('');
+  };
+
+  const handleRestoreItem = () => {
+    setIsOrderRemoved(false);
+    setErrorMessage('');
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setErrorMessage('');
+
+    if (isOrderRemoved) {
+      setErrorMessage('Pesanan kosong. Tambahkan seminar terlebih dahulu.');
+      return;
+    }
+
+    if (totalAmount <= 0) {
+      setErrorMessage('Total pembayaran harus lebih besar dari Rp 0.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -155,6 +220,7 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
           email: formValues.email,
           whatsapp: formValues.whatsapp,
           domicile: formValues.domicile,
+          couponCode: appliedCouponCode,
         }),
       });
 
@@ -195,22 +261,32 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
   return (
     <div className="payment-page">
       <header
-        className="payment-hero"
+        className="payment-hero tre-individual-hero"
         style={{
           backgroundImage: `linear-gradient(120deg, rgba(9, 20, 30, 0.85) 0%, rgba(16, 33, 45, 0.6) 45%, rgba(32, 60, 80, 0.35) 100%), url(${process.env.PUBLIC_URL}/assets/home/atmosphere.jpg)`,
         }}
       >
         <NavBar />
-        <div className="payment-hero-inner">
+        <div className="tre-individual-hero-inner">
           <h1>Pembayaran Seminar</h1>
-          <p>Informasi pembayaran akan dikirim melalui WhatsApp &amp; Email.</p>
         </div>
       </header>
 
-      <section className="payment-section">
+      <section
+        className="payment-section"
+        style={{
+          backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/clouds.jpg)`,
+        }}
+      >
         <div className="payment-container">
-          <form className="payment-form" onSubmit={handleSubmit}>
-            <h2>Detail Pendaftar</h2>
+          <form
+            id="payment-checkout-form"
+            className="payment-form payment-panel"
+            onSubmit={handleSubmit}
+          >
+            <div className="payment-panel-header">
+              <h2>Detail Pendaftar</h2>
+            </div>
             {paymentStatus ? (
               <div className="payment-error">
                 <strong>{STATUS_COPY[paymentStatus]?.title || 'Status pembayaran'}</strong>
@@ -219,18 +295,18 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
               </div>
             ) : null}
             <label>
-              Nama lengkap *
+              <span>Nama Lengkap *</span>
               <input
                 type="text"
                 name="name"
                 value={formValues.name}
                 onChange={handleChange}
-                placeholder="Nama lengkap"
+                placeholder="Nama Lengkap"
                 required
               />
             </label>
             <label>
-              Email *
+              <span>Email *</span>
               <input
                 type="email"
                 name="email"
@@ -241,7 +317,7 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
               />
             </label>
             <label>
-              Nomor Whatsapp *
+              <span>No Whatsapp *</span>
               <input
                 type="tel"
                 name="whatsapp"
@@ -252,7 +328,7 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
               />
             </label>
             <label>
-              Kota Domisili *
+              <span>Kota Domisili *</span>
               <input
                 type="text"
                 name="domicile"
@@ -265,24 +341,118 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
 
             {errorMessage ? <div className="payment-error">{errorMessage}</div> : null}
 
-            <button className="payment-submit" type="submit" disabled={isSubmitting}>
+            <button
+              className="payment-submit payment-submit-inline"
+              type="submit"
+              disabled={isSubmitting || isOrderRemoved}
+            >
               {isSubmitting ? 'Memproses...' : 'Buat Pesanan'}
             </button>
           </form>
 
-          <aside className="payment-summary">
-            <h2>Rincian Pesanan</h2>
-            <div className="payment-summary-row">
-              <span>{orderLabel}</span>
-              <span>Rp {seminarPrice.toLocaleString('id-ID')}</span>
-            </div>
-            <div className="payment-summary-total">
-              <span>Total</span>
-              <strong>Rp {seminarPrice.toLocaleString('id-ID')}</strong>
-            </div>
-            <p className="payment-summary-note">
-              Setelah pembayaran berhasil, Anda akan menerima konfirmasi melalui email dan WhatsApp.
-            </p>
+          <aside className="payment-sidebar">
+            <section className="payment-summary payment-panel payment-summary-panel">
+              <div className="payment-panel-header">
+                <h2>Rincian Pesanan</h2>
+              </div>
+              {isOrderRemoved ? (
+                <div className="payment-summary-empty">
+                  <p>Pesanan kosong.</p>
+                  <button
+                    className="payment-summary-restore"
+                    type="button"
+                    onClick={handleRestoreItem}
+                  >
+                    Tambahkan seminar lagi
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="payment-summary-head">
+                    <span>Produk</span>
+                    <span>Subtotal</span>
+                  </div>
+                  <div className="payment-summary-item">
+                    <div className="payment-summary-product">
+                      <strong>{orderLabel}</strong>
+                      <div className="payment-summary-controls">
+                        <button
+                          className="payment-summary-control payment-summary-control-remove"
+                          type="button"
+                          onClick={handleRemoveItem}
+                          aria-label={`Hapus ${orderLabel}`}
+                        >
+                          -
+                        </button>
+                        <span className="payment-summary-qty">1</span>
+                        <button
+                          className="payment-summary-control payment-summary-control-add"
+                          type="button"
+                          disabled
+                          aria-label="Jumlah maksimal 1"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <span>{formatCurrency(seminarPrice)}</span>
+                  </div>
+                </>
+              )}
+              <div className="payment-summary-row">
+                <span>Subtotal</span>
+                <span>{formatCurrency(subtotal)}</span>
+              </div>
+              {appliedCoupon ? (
+                <div className="payment-summary-row payment-summary-row-discount">
+                  <span>Diskon ({appliedCoupon.code})</span>
+                  <span>-{formatCurrency(couponDiscount)}</span>
+                </div>
+              ) : null}
+              <div className="payment-summary-total">
+                <span>Total</span>
+                <strong>{formatCurrency(totalAmount)}</strong>
+              </div>
+            </section>
+
+            <section className="payment-coupon payment-panel payment-coupon-panel">
+              <p>
+                Punya kupon?{' '}
+                <button
+                  className="payment-coupon-trigger"
+                  type="button"
+                  onClick={() => setIsCouponOpen((current) => !current)}
+                >
+                  klik di sini
+                </button>
+              </p>
+              {isCouponOpen ? (
+                <div className="payment-coupon-form">
+                  <p>If you have a coupon code, please apply it below.</p>
+                  <div className="payment-coupon-fields">
+                    <input
+                      type="text"
+                      value={couponInput}
+                      onChange={(event) => setCouponInput(event.target.value)}
+                      placeholder="Coupon code"
+                    />
+                    <button type="button" onClick={handleCouponApply}>
+                      Apply
+                    </button>
+                  </div>
+                  {couponMessage ? (
+                    <p
+                      className={`payment-coupon-message${
+                        appliedCoupon ? ' is-success' : ' is-error'
+                      }`}
+                    >
+                      {couponMessage}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </section>
+
           </aside>
         </div>
       </section>

@@ -28,9 +28,43 @@ function TreIndividualsPage() {
     if (!query) return [];
     return cityPins.filter((city) => city.toLowerCase().includes(query));
   }, [cityPins, cityQuery]);
+  const hasSearchQuery = cityQuery.trim().length > 0;
   const featuredCities = useMemo(
     () => featuredCityNames.filter((city) => citySlugMap[city]),
     [citySlugMap]
+  );
+  const renderCitySearch = (className = '') => (
+    <div className={`tre-individual-search ${className}`.trim()}>
+      <input
+        type="search"
+        className="tre-individual-search-input"
+        value={cityQuery}
+        onChange={(event) => setCityQuery(event.target.value)}
+        placeholder="Cari kota seminar"
+        aria-label="Cari kota seminar"
+        style={{
+          backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/search.svg)`,
+        }}
+      />
+      {hasSearchQuery ? (
+        <div className="tre-individual-suggestions" role="listbox">
+          {filteredCities.length === 0 ? (
+            <div className="tre-individual-no-results">Tidak ada kota</div>
+          ) : (
+            filteredCities.map((city) => (
+              <Link
+                key={city}
+                to={`/tre-individuals/${citySlugMap[city]}`}
+                className="tre-individual-suggestion"
+                role="option"
+              >
+                {city}
+              </Link>
+            ))
+          )}
+        </div>
+      ) : null}
+    </div>
   );
 
   return (
@@ -54,35 +88,7 @@ function TreIndividualsPage() {
       >
         <div className="tre-individual-map-wrap">
           <div className="tre-individual-map-heading">Kota Pelaksanaan</div>
-          <div className="tre-individual-search">
-            <input
-              type="search"
-              className="tre-individual-search-input"
-              value={cityQuery}
-              onChange={(event) => setCityQuery(event.target.value)}
-              placeholder="Cari kota seminar"
-              aria-label="Cari kota seminar"
-              style={{
-                backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/search.svg)`,
-              }}
-            />
-            <div className="tre-individual-suggestions" role="listbox">
-              {cityQuery.trim() && filteredCities.length === 0 ? (
-                <div className="tre-individual-no-results">Tidak ada kota</div>
-              ) : (
-                filteredCities.map((city) => (
-                  <Link
-                    key={city}
-                    to={`/tre-individuals/${citySlugMap[city]}`}
-                    className="tre-individual-suggestion"
-                    role="option"
-                  >
-                    {city}
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
+          {renderCitySearch('tre-individual-search-desktop')}
           <div className="tre-individual-mobile-featured">
             {featuredCities.map((city) => (
               <Link
@@ -146,6 +152,7 @@ function TreIndividualsPage() {
           <div className="tre-individual-cities-heading">
             <h2>Semua Kota</h2>
             <p>Pilih kota terdekat untuk mengikuti seminar TRE.</p>
+            {renderCitySearch('tre-individual-search-mobile')}
           </div>
           <div className="tre-individual-city-grid">
             {treCityData.map((city) => (

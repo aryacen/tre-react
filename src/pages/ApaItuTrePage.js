@@ -226,7 +226,7 @@ function ApaItuTrePage() {
                   <h3>HINDRA GUNAWAN</h3>
                   <p>Founder of TRE Indonesia.</p>
                   <p>1st Certified TRE Provider in Indonesia</p>
-                  <p>The Only Certified TRE Trainer in Indonesia</p>
+                  <p>The Only Certified Certification TRE Trainer in Indonesia</p>
                 </div>
               </div>
             </div>

@@ -38,9 +38,6 @@ function TreIndividualCityPage() {
         <NavBar />
         <div className="tre-city-hero-inner">
           <h1>TRE For Individuals</h1>
-          <Link className="tre-city-back" to="/tre-individuals">
-            Lihat semua kota
-          </Link>
         </div>
       </header>
 

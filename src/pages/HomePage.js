@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import YouTubeEmbed from '../components/YouTubeEmbed';
@@ -186,9 +186,75 @@ const getCarouselStep = (track) => {
 function HomePage() {
   const scheduleTrackRef = useRef(null);
   const blogTrackRef = useRef(null);
+  const [isPromoPopupOpen, setIsPromoPopupOpen] = useState(false);
+
+  useEffect(() => {
+    const popupTimer = window.setTimeout(() => {
+      setIsPromoPopupOpen(true);
+    }, 5000);
+
+    return () => {
+      window.clearTimeout(popupTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle('home-promo-popup-open', isPromoPopupOpen);
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsPromoPopupOpen(false);
+      }
+    };
+
+    if (isPromoPopupOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.body.classList.remove('home-promo-popup-open');
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isPromoPopupOpen]);
 
   return (
     <>
+      {isPromoPopupOpen ? (
+        <div
+          className="home-promo-popup"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="home-promo-popup-title"
+          onClick={() => setIsPromoPopupOpen(false)}
+        >
+          <div className="home-promo-popup-panel" onClick={(event) => event.stopPropagation()}>
+            <button
+              className="home-promo-popup-close"
+              type="button"
+              aria-label="Tutup popup promosi"
+              onClick={() => setIsPromoPopupOpen(false)}
+            >
+              ×
+            </button>
+            <img
+              className="home-promo-popup-image"
+              src="/assets/home/1000.jpeg"
+              alt="Workshop TRE Indonesia Angkatan 1000"
+            />
+            <div className="home-promo-popup-body">
+              <h2 id="home-promo-popup-title">Workshop TRE Angkatan 1000</h2>
+              <Link
+                className="home-promo-popup-cta"
+                to="/events/angkatan-1000"
+                onClick={() => setIsPromoPopupOpen(false)}
+              >
+                Klik untuk info lengkap dan harga promo
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <header
         className="hero hero-with-image"
         style={{
