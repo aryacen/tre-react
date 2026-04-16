@@ -260,7 +260,7 @@ function HomePage() {
       <header
         className="hero hero-with-image"
         style={{
-          '--hero-bg': `url(${process.env.PUBLIC_URL}/assets/home/bg4.jpg)`,
+          '--hero-bg': `url(${process.env.PUBLIC_URL}/assets/home/bg4.webp)`,
         }}
       >
         <NavBar />
@@ -283,7 +283,7 @@ function HomePage() {
       <section
         className="tre-section"
         style={{
-          '--section-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1.jpg)`,
+          '--section-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1.webp)`,
         }}
       >
         <div className="intro">
