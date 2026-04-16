@@ -48,9 +48,9 @@ export const pastEvents = [
       'Selama dua hari penuh, peserta diajak mendalami prinsip-prinsip pelepasan stres dan trauma berbasis tubuh melalui sesi praktik, diskusi, dan refleksi bersama.',
       'Acara ini menjadi salah satu tonggak penting dalam perkembangan komunitas TRE Indonesia dan memperkuat jejaring praktisi yang terus bertumbuh hingga hari ini.',
     ],
-    image: '/assets/home/david2018.jpg',
+    image: '/assets/home/david2018.JPG',
     gallery: [
-      '/assets/home/david2018.jpg',
+      '/assets/home/david2018.JPG',
       '/assets/home/david2018_2.jpg',
       '/assets/home/david2018_3.jpeg',
       ],
