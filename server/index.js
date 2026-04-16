@@ -16,7 +16,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
+const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || '';
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const MIDTRANS_IS_PRODUCTION = process.env.MIDTRANS_IS_PRODUCTION === 'true';
 const SMTP_HOST = process.env.SMTP_HOST;
@@ -46,7 +46,51 @@ if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS || !SMTP_FROM_EMAIL) {
   console.warn('SMTP configuration is incomplete. Form email delivery is disabled.');
 }
 
-app.use(cors({ origin: FRONTEND_BASE_URL }));
+const trimTrailingSlash = (value) => String(value ?? '').replace(/\/+$/, '');
+
+const isLocalhostUrl = (value) =>
+  /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(trimTrailingSlash(value));
+
+const getFrontendBaseUrl = (req) => {
+  const requestOrigin = trimTrailingSlash(req.get('origin'));
+  if (requestOrigin) {
+    return requestOrigin;
+  }
+
+  const configuredBaseUrl = trimTrailingSlash(FRONTEND_BASE_URL);
+  if (configuredBaseUrl) {
+    return configuredBaseUrl;
+  }
+
+  const forwardedProto = trimTrailingSlash(req.get('x-forwarded-proto'));
+  const forwardedHost = trimTrailingSlash(req.get('x-forwarded-host'));
+  const host = trimTrailingSlash(req.get('host'));
+  const protocol = forwardedProto || req.protocol;
+  const hostname = forwardedHost || host;
+
+  if (!protocol || !hostname) {
+    return '';
+  }
+
+  return `${protocol}://${hostname}`;
+};
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const configuredBaseUrl = trimTrailingSlash(FRONTEND_BASE_URL);
+      if (!configuredBaseUrl || isLocalhostUrl(configuredBaseUrl)) {
+        return callback(null, true);
+      }
+
+      return callback(null, trimTrailingSlash(origin) === configuredBaseUrl);
+    },
+  })
+);
 app.use(express.json());
 
 const buildBasicAuthHeader = (serverKey) =>
@@ -292,6 +336,13 @@ app.post('/api/midtrans/transactions', async (req, res) => {
     }
 
     const orderId = `tre-${city}-${Date.now()}`;
+    const frontendBaseUrl = getFrontendBaseUrl(req);
+
+    if (!frontendBaseUrl) {
+      return res.status(500).json({ message: 'Frontend base URL belum tersedia.' });
+    }
+
+    const callbackBaseUrl = `${frontendBaseUrl}${seminar.paymentPath}`;
     const transactionPayload = {
       transaction_details: {
         order_id: orderId,
@@ -313,8 +364,9 @@ app.post('/api/midtrans/transactions', async (req, res) => {
       custom_field1: city,
       custom_field2: domicile,
       callbacks: {
-        finish: `${FRONTEND_BASE_URL}${seminar.paymentPath}?status=success`,
-        error: `${FRONTEND_BASE_URL}${seminar.paymentPath}?status=failed`,
+        finish: `${callbackBaseUrl}?status=success&order_id=${encodeURIComponent(orderId)}`,
+        error: `${callbackBaseUrl}?status=failed&order_id=${encodeURIComponent(orderId)}`,
+        unfinish: `${callbackBaseUrl}?status=pending&order_id=${encodeURIComponent(orderId)}`,
       },
       expiry: {
         unit: 'hours',

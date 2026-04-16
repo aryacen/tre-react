@@ -26,6 +26,7 @@ import KetentuanLayananPage from './pages/KetentuanLayananPage';
 import FaqPage from './pages/FaqPage';
 import CertifiedTreProviderPage from './pages/CertifiedTreProviderPage';
 import KelasSertifikasiTreProviderPage from './pages/KelasSertifikasiTreProviderPage';
+import OrderReceivedPage from './pages/OrderReceivedPage';
 
 function App() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -94,6 +95,7 @@ function App() {
         />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/events/:slug" element={<EventDetailPage />} />
+        <Route path="/checkout/order-received" element={<OrderReceivedPage />} />
         <Route path="/kebijakan-privasi" element={<KebijakanPrivasiPage />} />
         <Route path="/ketentuan-layanan" element={<KetentuanLayananPage />} />
       </Routes>

@@ -45,11 +45,37 @@ const STATUS_COPY = {
   },
 };
 const formatCurrency = (amount) => `Rp ${amount.toLocaleString('id-ID')}`;
+const getStoredPaymentUrlKey = (orderId) => `midtrans-payment-url:${orderId}`;
+
+const saveStoredPaymentUrl = (orderId, redirectUrl) => {
+  if (!orderId || !redirectUrl || typeof window === 'undefined') {
+    return;
+  }
+
+  window.sessionStorage.setItem(getStoredPaymentUrlKey(orderId), redirectUrl);
+};
+
+const readStoredPaymentUrl = (orderId) => {
+  if (!orderId || typeof window === 'undefined') {
+    return '';
+  }
+
+  return window.sessionStorage.getItem(getStoredPaymentUrlKey(orderId)) || '';
+};
+
+const removeStoredPaymentUrl = (orderId) => {
+  if (!orderId || typeof window === 'undefined') {
+    return;
+  }
+
+  window.sessionStorage.removeItem(getStoredPaymentUrlKey(orderId));
+};
 
 function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
   const { city: routeCitySlug } = useParams();
   const citySlug = forcedSeminarSlug || routeCitySlug;
   const [searchParams] = useSearchParams();
+  const orderId = searchParams.get('order_id');
   const city = findCityBySlug(citySlug);
   const [formValues, setFormValues] = useState({
     name: '',
@@ -66,6 +92,7 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
   const [couponInput, setCouponInput] = useState('');
   const [appliedCouponCode, setAppliedCouponCode] = useState('');
   const [couponMessage, setCouponMessage] = useState('');
+  const [resumePaymentUrl, setResumePaymentUrl] = useState('');
 
   const seminar = useMemo(() => {
     if (city) {
@@ -103,7 +130,10 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
   const totalAmount = Math.max(0, subtotal - couponDiscount);
 
   useEffect(() => {
-    const orderId = searchParams.get('order_id');
+    setResumePaymentUrl(readStoredPaymentUrl(orderId));
+  }, [orderId]);
+
+  useEffect(() => {
     const redirectedTransactionStatus = searchParams.get('transaction_status');
     const redirectedStatus = searchParams.get('status');
 
@@ -129,13 +159,23 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
         }
 
         if (!isCancelled) {
-          setPaymentStatus(payload.status_label || redirectedTransactionStatus || redirectedStatus || '');
+          const resolvedStatus =
+            payload.status_label || redirectedTransactionStatus || redirectedStatus || '';
+
+          setPaymentStatus(resolvedStatus);
           setStatusNote(
-            STATUS_COPY[payload.status_label]?.message ||
+            STATUS_COPY[resolvedStatus]?.message ||
               `Status pembayaran saat ini: ${
                 payload.transaction_status || redirectedTransactionStatus || 'tidak diketahui'
               }.`
           );
+
+          if (resolvedStatus === 'pending') {
+            setResumePaymentUrl(readStoredPaymentUrl(orderId));
+          } else {
+            removeStoredPaymentUrl(orderId);
+            setResumePaymentUrl('');
+          }
         }
       } catch (error) {
         if (!isCancelled) {
@@ -153,7 +193,7 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
     return () => {
       isCancelled = true;
     };
-  }, [searchParams]);
+  }, [orderId, searchParams]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -234,11 +274,21 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
         throw new Error('Redirect URL Midtrans tidak ditemukan.');
       }
 
+      saveStoredPaymentUrl(payload.order_id, payload.redirect_url);
       window.location.href = payload.redirect_url;
     } catch (error) {
       setErrorMessage(error.message || 'Terjadi kesalahan. Coba lagi.');
       setIsSubmitting(false);
     }
+  };
+
+  const handleResumePayment = () => {
+    if (!resumePaymentUrl) {
+      setErrorMessage('Link pembayaran tidak ditemukan. Silakan buat pesanan baru.');
+      return;
+    }
+
+    window.location.href = resumePaymentUrl;
   };
 
   if (!seminar) {
@@ -292,6 +342,15 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
                 <strong>{STATUS_COPY[paymentStatus]?.title || 'Status pembayaran'}</strong>
                 <br />
                 {statusNote}
+                {paymentStatus === 'pending' && resumePaymentUrl ? (
+                  <button
+                    className="payment-submit payment-resume-button"
+                    type="button"
+                    onClick={handleResumePayment}
+                  >
+                    Lanjutkan Pembayaran
+                  </button>
+                ) : null}
               </div>
             ) : null}
             <label>
