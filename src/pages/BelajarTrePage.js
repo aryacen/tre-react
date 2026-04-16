@@ -30,7 +30,7 @@ function BelajarTrePage() {
                 <div
                   className="belajar-tre-card-media"
                   style={{
-                    backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/TRE.JPG)`,
+                    backgroundImage: `url(${process.env.PUBLIC_URL}/assets/home/TRE.jpg)`,
                   }}
                   role="img"
                   aria-label="TRE For Individuals"
