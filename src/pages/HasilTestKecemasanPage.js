@@ -356,7 +356,7 @@ function HasilTestKecemasanPage() {
       <section
         className="cta-section cta-northlights hasil-book-cta"
         style={{
-          '--cta-bg': `url(${process.env.PUBLIC_URL}/assets/home/book.gif)`,
+          '--cta-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1.webp)`,
         }}
       >
         <div className="cta-content">

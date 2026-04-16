@@ -312,7 +312,7 @@ function ArtikelDetailPage() {
       <section
         className="cta-section cta-northlights"
         style={{
-          '--cta-bg': `url(${process.env.PUBLIC_URL}/assets/home/artikel.gif)`,
+          '--cta-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1.webp)`,
         }}
       >
         <div className="cta-content">

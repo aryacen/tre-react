@@ -389,7 +389,7 @@ function ApaItuTrePage() {
       <section
         className="cta-section"
         style={{
-          '--cta-bg': `url(${process.env.PUBLIC_URL}/assets/home/forest.gif)`,
+          '--cta-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1.webp)`,
         }}
       >
         <div className="cta-content">

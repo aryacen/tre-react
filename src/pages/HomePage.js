@@ -283,7 +283,7 @@ function HomePage() {
       <section
         className="tre-section"
         style={{
-          '--section-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1.webp)`,
+          '--section-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1_org.webp)`,
         }}
       >
         <div className="intro">
@@ -632,7 +632,7 @@ function HomePage() {
       <section
         className="cta-section"
         style={{
-          '--cta-bg': `url(${process.env.PUBLIC_URL}/assets/home/waterfall.gif)`,
+          '--cta-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1.webp)`,
         }}
       >
         <div className="cta-content">
