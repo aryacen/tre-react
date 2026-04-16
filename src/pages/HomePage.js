@@ -260,7 +260,7 @@ function HomePage() {
       <header
         className="hero hero-with-image"
         style={{
-          '--hero-bg': `url(${process.env.PUBLIC_URL}/assets/home/bg4.webp)`,
+          '--hero-bg': `url(${process.env.PUBLIC_URL}/assets/home/bg4.jpg)`,
         }}
       >
         <NavBar />
