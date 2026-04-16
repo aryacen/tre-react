@@ -283,7 +283,7 @@ function HomePage() {
       <section
         className="tre-section"
         style={{
-          '--section-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1_org.webp)`,
+          '--section-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1_org.jpg)`,
         }}
       >
         <div className="intro">
