@@ -42,22 +42,6 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    const assetsToPreload = [
-      '/assets/home/bg4.jpg',
-      '/assets/home/TRE1.jpg',
-      '/assets/home/bg-perp5.jpg',
-      '/assets/home/waterfall.gif',
-      '/assets/home/forest.gif',
-      '/assets/home/apaitutre.jpg',
-    ];
-
-    assetsToPreload.forEach((asset) => {
-      const img = new Image();
-      img.src = `${process.env.PUBLIC_URL}${asset}`;
-    });
-  }, []);
-
   return (
     <div className="page">
       <ScrollToTop />

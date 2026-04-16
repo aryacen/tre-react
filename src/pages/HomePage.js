@@ -240,6 +240,8 @@ function HomePage() {
               className="home-promo-popup-image"
               src="/assets/home/1000.jpeg"
               alt="Workshop TRE Indonesia Angkatan 1000"
+              loading="lazy"
+              decoding="async"
             />
             <div className="home-promo-popup-body">
               <h2 id="home-promo-popup-title">Workshop TRE Angkatan 1000</h2>
@@ -348,7 +350,7 @@ function HomePage() {
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
                 <div className="benefit-figure">
-                  <img src={item.image} alt={item.title} />
+                  <img src={item.image} alt={item.title} loading="lazy" decoding="async" />
                 </div>
               </div>
             ))}
@@ -363,12 +365,12 @@ function HomePage() {
         <div className="logo-grid">
           {trustedLogos.map((logo) => (
             <div className="logo-tile" key={logo.src}>
-              <img src={logo.src} alt={logo.alt} />
+              <img src={logo.src} alt={logo.alt} loading="lazy" decoding="async" />
             </div>
           ))}
           {trustedLogos.map((logo) => (
             <div className="logo-tile logo-tile-duplicate" key={`dup-${logo.src}`} aria-hidden="true">
-              <img src={logo.src} alt="" />
+              <img src={logo.src} alt="" loading="lazy" decoding="async" />
             </div>
           ))}
         </div>
@@ -461,8 +463,14 @@ function HomePage() {
                 className="schedule-card"
                 key={`${item.title}-${item.image}`}
                 to={`/tre-individuals/${item.slug}`}
-                style={{ backgroundImage: `url(${item.image})` }}
               >
+                <img
+                  className="schedule-card-image"
+                  src={item.image}
+                  alt={item.title}
+                  loading="lazy"
+                  decoding="async"
+                />
                 <div className="schedule-overlay">
                   <h3>{item.title}</h3>
                   <div className="schedule-cta">
@@ -514,7 +522,12 @@ function HomePage() {
       >
         <div className="test-card">
           <div className="test-media">
-            <img src="/assets/home/test.jpg" alt="Tes kesehatan mental" />
+            <img
+              src="/assets/home/test.jpg"
+              alt="Tes kesehatan mental"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
           <div className="test-content">
             <p className="test-eyebrow">TEST</p>
@@ -572,7 +585,7 @@ function HomePage() {
                 aria-label={`Baca artikel ${item.title}`}
               >
                 <div className="blog-media">
-                  <img src={item.image} alt={item.title} />
+                  <img src={item.image} alt={item.title} loading="lazy" decoding="async" />
                 </div>
                 <div className="blog-body">
                   <p className="blog-category">{item.category}</p>
