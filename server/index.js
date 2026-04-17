@@ -51,28 +51,48 @@ const trimTrailingSlash = (value) => String(value ?? '').replace(/\/+$/, '');
 const isLocalhostUrl = (value) =>
   /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(trimTrailingSlash(value));
 
-const getFrontendBaseUrl = (req) => {
-  const requestOrigin = trimTrailingSlash(req.get('origin'));
-  if (requestOrigin) {
-    return requestOrigin;
+const getPreferredBaseUrl = (candidates, { allowLocalhost = false } = {}) => {
+  for (const candidate of candidates) {
+    const normalizedCandidate = trimTrailingSlash(candidate);
+
+    if (!normalizedCandidate) {
+      continue;
+    }
+
+    if (!allowLocalhost && isLocalhostUrl(normalizedCandidate)) {
+      continue;
+    }
+
+    return normalizedCandidate;
   }
 
+  return '';
+};
+
+const getFrontendBaseUrl = (req) => {
   const configuredBaseUrl = trimTrailingSlash(FRONTEND_BASE_URL);
-  if (configuredBaseUrl) {
-    return configuredBaseUrl;
-  }
+  const requestOrigin = trimTrailingSlash(req.get('origin'));
 
   const forwardedProto = trimTrailingSlash(req.get('x-forwarded-proto'));
   const forwardedHost = trimTrailingSlash(req.get('x-forwarded-host'));
   const host = trimTrailingSlash(req.get('host'));
   const protocol = forwardedProto || req.protocol;
   const hostname = forwardedHost || host;
+  const derivedBaseUrl = protocol && hostname ? `${protocol}://${hostname}` : '';
 
-  if (!protocol || !hostname) {
-    return '';
+  const publicBaseUrl = getPreferredBaseUrl([
+    configuredBaseUrl,
+    requestOrigin,
+    derivedBaseUrl,
+  ]);
+
+  if (publicBaseUrl) {
+    return publicBaseUrl;
   }
 
-  return `${protocol}://${hostname}`;
+  return getPreferredBaseUrl([requestOrigin, configuredBaseUrl, derivedBaseUrl], {
+    allowLocalhost: true,
+  });
 };
 
 app.use(

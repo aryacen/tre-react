@@ -15,6 +15,48 @@ export const upcomingEvent = {
   image: '/assets/home/1000.jpeg',
   imagePosition: 'center 16%',
   imageSize: '72%',
+  media: [
+    {
+      type: 'video',
+      src: '/assets/home/drdavid1000.mp4',
+    },
+    {
+      type: 'image',
+      src: '/assets/home/1000_1.jpg',
+    },
+    {
+      type: 'image',
+      src: '/assets/home/1000_2.jpg',
+    },
+    {
+      type: 'image',
+      src: '/assets/home/1000_3.jpg',
+    },
+    {
+      type: 'image',
+      src: '/assets/home/1000_4.jpg',
+    },
+    {
+      type: 'image',
+      src: '/assets/home/1000_5.jpg',
+    },
+    {
+      type: 'image',
+      src: '/assets/home/1000_6.jpg',
+    },
+    {
+      type: 'image',
+      src: '/assets/home/1000_7.jpg',
+    },
+    {
+      type: 'image',
+      src: '/assets/home/1000_9.jpg',
+    },
+    {
+      type: 'image',
+      src: '/assets/home/1000_10.jpg',
+    },
+  ],
   gallery: [
     '/assets/home/1000_1.jpg',
     '/assets/home/1000_2.jpg',
@@ -30,7 +72,7 @@ export const upcomingEvent = {
   ctaLabel: 'Register Now',
   showCta: true,
   whatsappMessage:
-    'Halo, saya ingin mengetahui informasi lebih lanjut seputar acara workshop TRE angkatan 1000.',
+    '[WEB] Halo, saya ingin mengetahui informasi lebih lanjut seputar acara workshop TRE angkatan 1000.',
 };
 
 export const pastEvents = [
