@@ -17,6 +17,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || '';
+const DEFAULT_PUBLIC_FRONTEND_BASE_URL = 'https://treindonesia.com';
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const MIDTRANS_IS_PRODUCTION = process.env.MIDTRANS_IS_PRODUCTION === 'true';
 const SMTP_HOST = process.env.SMTP_HOST;
@@ -69,8 +70,22 @@ const getPreferredBaseUrl = (candidates, { allowLocalhost = false } = {}) => {
   return '';
 };
 
-const getFrontendBaseUrl = (req) => {
+const getConfiguredPublicFrontendBaseUrl = () => {
   const configuredBaseUrl = trimTrailingSlash(FRONTEND_BASE_URL);
+
+  if (configuredBaseUrl && !isLocalhostUrl(configuredBaseUrl)) {
+    return configuredBaseUrl;
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    return DEFAULT_PUBLIC_FRONTEND_BASE_URL;
+  }
+
+  return '';
+};
+
+const getFrontendBaseUrl = (req) => {
+  const configuredBaseUrl = getConfiguredPublicFrontendBaseUrl();
   const requestOrigin = trimTrailingSlash(req.get('origin'));
 
   const forwardedProto = trimTrailingSlash(req.get('x-forwarded-proto'));
@@ -102,8 +117,8 @@ app.use(
         return callback(null, true);
       }
 
-      const configuredBaseUrl = trimTrailingSlash(FRONTEND_BASE_URL);
-      if (!configuredBaseUrl || isLocalhostUrl(configuredBaseUrl)) {
+      const configuredBaseUrl = getConfiguredPublicFrontendBaseUrl();
+      if (!configuredBaseUrl) {
         return callback(null, true);
       }
 
