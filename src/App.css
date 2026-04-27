@@ -764,6 +764,34 @@ body.nav-menu-open .wa-widget {
   border: 1px solid rgba(132, 172, 200, 0.3);
 }
 
+.hasil-result-gate {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.hasil-result-gate-copy {
+  width: min(560px, 100%);
+  margin: 0 auto 18px;
+  text-align: center;
+  color: #17344d;
+}
+
+.hasil-result-gate-copy h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.45rem, 2.4vw, 2.2rem);
+}
+
+.hasil-result-gate-copy p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.hasil-result-status {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
 .hasil-form {
   width: min(500px, 100%);
   margin: 0 auto;
