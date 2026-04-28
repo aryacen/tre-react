@@ -3,10 +3,12 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { findCityBySlug } from '../data/treCityData';
 import {
+  ONLINE_DELIVERY_FEE,
   PAYMENT_COUPON_LOOKUP,
   getCouponDiscount,
   normalizeCouponCode,
 } from '../data/paymentConfig';
+import { getCurrentUtmParams, toServerUtmPayload } from '../utils/utm';
 
 const DEFAULT_SEMINAR_PRICE = 299000;
 const ONLINE_SEMINAR_SLUG = 'online';
@@ -82,6 +84,10 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
     email: '',
     whatsapp: '',
     domicile: '',
+    shippingAddress: '',
+    shippingDistrict: '',
+    shippingPostalCode: '',
+    shippingCity: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -117,8 +123,10 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
     return seminar.name;
   }, [seminar]);
 
+  const isOnlineSeminar = seminar?.slug === ONLINE_SEMINAR_SLUG;
   const seminarPrice = seminar?.price || DEFAULT_SEMINAR_PRICE;
   const subtotal = isOrderRemoved ? 0 : seminarPrice;
+  const deliveryFee = isOnlineSeminar && !isOrderRemoved ? ONLINE_DELIVERY_FEE : 0;
   const appliedCoupon = useMemo(
     () => PAYMENT_COUPON_LOOKUP[appliedCouponCode] || null,
     [appliedCouponCode]
@@ -127,7 +135,7 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
     () => getCouponDiscount(appliedCoupon, subtotal),
     [appliedCoupon, subtotal]
   );
-  const totalAmount = Math.max(0, subtotal - couponDiscount);
+  const totalAmount = Math.max(0, subtotal + deliveryFee - couponDiscount);
 
   useEffect(() => {
     setResumePaymentUrl(readStoredPaymentUrl(orderId));
@@ -247,6 +255,17 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
       return;
     }
 
+    if (
+      isOnlineSeminar &&
+      (!formValues.shippingAddress.trim() ||
+        !formValues.shippingDistrict.trim() ||
+        !formValues.shippingPostalCode.trim() ||
+        !formValues.shippingCity.trim())
+    ) {
+      setErrorMessage('Alamat pengiriman buku wajib diisi lengkap.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -260,7 +279,18 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
           email: formValues.email,
           whatsapp: formValues.whatsapp,
           domicile: formValues.domicile,
+          ...(isOnlineSeminar
+            ? {
+                shippingAddress: {
+                  address: formValues.shippingAddress,
+                  district: formValues.shippingDistrict,
+                  postalCode: formValues.shippingPostalCode,
+                  city: formValues.shippingCity,
+                },
+              }
+            : {}),
           couponCode: appliedCouponCode,
+          utm: toServerUtmPayload(getCurrentUtmParams(searchParams)),
         }),
       });
 
@@ -398,6 +428,59 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
               />
             </label>
 
+            {isOnlineSeminar ? (
+              <div className="payment-shipping-fields">
+                <h3>Alamat Pengiriman Buku</h3>
+                <label>
+                  <span>Alamat Lengkap *</span>
+                  <textarea
+                    name="shippingAddress"
+                    value={formValues.shippingAddress}
+                    onChange={handleChange}
+                    placeholder="Alamat Lengkap"
+                    rows="3"
+                    required
+                  />
+                </label>
+                <label>
+                  <span>Kecamatan *</span>
+                  <input
+                    type="text"
+                    name="shippingDistrict"
+                    value={formValues.shippingDistrict}
+                    onChange={handleChange}
+                    placeholder="Kecamatan"
+                    required
+                  />
+                </label>
+                <label>
+                  <span>Kode Pos *</span>
+                  <input
+                    type="text"
+                    name="shippingPostalCode"
+                    value={formValues.shippingPostalCode}
+                    onChange={handleChange}
+                    placeholder="Kode Pos"
+                    inputMode="numeric"
+                    pattern="[0-9]{5}"
+                    title="Kode pos berisi 5 angka"
+                    required
+                  />
+                </label>
+                <label>
+                  <span>Kota *</span>
+                  <input
+                    type="text"
+                    name="shippingCity"
+                    value={formValues.shippingCity}
+                    onChange={handleChange}
+                    placeholder="Kota"
+                    required
+                  />
+                </label>
+              </div>
+            ) : null}
+
             {errorMessage ? <div className="payment-error">{errorMessage}</div> : null}
 
             <button
@@ -458,6 +541,12 @@ function PaymentPage({ seminarSlug: forcedSeminarSlug }) {
                   </div>
                 </>
               )}
+              {isOnlineSeminar && !isOrderRemoved ? (
+                <div className="payment-summary-row">
+                  <span>Biaya Ongkir</span>
+                  <span>{formatCurrency(deliveryFee)}</span>
+                </div>
+              ) : null}
               <div className="payment-summary-row">
                 <span>Subtotal</span>
                 <span>{formatCurrency(subtotal)}</span>

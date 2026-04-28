@@ -48,6 +48,18 @@ export const PAYMENT_METHOD_LOOKUP = PAYMENT_METHODS.reduce((lookup, method) => 
   return lookup;
 }, {});
 
+const parseCurrencyAmount = (value) => {
+  const amount = Number(String(value ?? '').replace(/[^\d]/g, ''));
+  return Number.isFinite(amount) && amount > 0 ? amount : 0;
+};
+
+const DEFAULT_ONLINE_DELIVERY_FEE = 10000;
+
+export const ONLINE_DELIVERY_FEE =
+  parseCurrencyAmount(
+    process.env.REACT_APP_ONLINE_DELIVERY_FEE || process.env.ONLINE_DELIVERY_FEE
+  ) || DEFAULT_ONLINE_DELIVERY_FEE;
+
 // Add active coupons here when needed.
 // Example:
 // { code: 'HEMAT50', type: 'fixed', amount: 50000, label: 'Diskon Rp50.000' }

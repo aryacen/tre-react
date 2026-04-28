@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import NavBar from '../components/NavBar';
-import {
-  sendFreeTestResults,
-  submitSupportForm,
-} from '../utils/formSubmission';
+import { sendFreeTestResults } from '../utils/formSubmission';
 import {
   buildTestResultPayload,
   hasCompleteTestResults,
@@ -26,7 +23,7 @@ function HasilTestKecemasanPage() {
     depresi: depresiParam,
     stress: stressParam,
   });
-  const { sourceLabel, kecemasanData, depresiData, stressData } = resultSummary;
+  const { sourceLabel } = resultSummary;
   const [resultFormValues, setResultFormValues] = useState({
     name: '',
     email: '',
@@ -34,23 +31,10 @@ function HasilTestKecemasanPage() {
   const [isSendingResult, setIsSendingResult] = useState(false);
   const [hasUnlockedResults, setHasUnlockedResults] = useState(false);
   const [resultFormStatus, setResultFormStatus] = useState({ type: '', message: '' });
-  const [formValues, setFormValues] = useState({
-    name: '',
-    whatsapp: '',
-    email: '',
-    domicile: '',
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formStatus, setFormStatus] = useState({ type: '', message: '' });
 
   const handleResultFormChange = (event) => {
     const { name, value } = event.target;
     setResultFormValues((current) => ({ ...current, [name]: value }));
-  };
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormValues((current) => ({ ...current, [name]: value }));
   };
 
   const handleResultFormSubmit = async (event) => {
@@ -79,58 +63,6 @@ function HasilTestKecemasanPage() {
       });
     } finally {
       setIsSendingResult(false);
-    }
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-    setFormStatus({ type: '', message: '' });
-
-    try {
-      await submitSupportForm({
-        formType: 'waiting-list-hasil-test',
-        subject: 'Waiting List Seminar dari Hasil Tes Gratis TRE Indonesia',
-        replyTo: formValues.email,
-        fields: [
-          { label: 'Nama Lengkap', value: formValues.name },
-          { label: 'Whatsapp', value: formValues.whatsapp },
-          { label: 'Email Aktif', value: formValues.email },
-          { label: 'Kota Domisili', value: formValues.domicile },
-          {
-            label: 'Sumber Form',
-            value: `Hasil ${sourceLabel}`,
-          },
-          {
-            label: 'Hasil Kecemasan',
-            value: kecemasanData.level,
-          },
-          ...(depresiData
-            ? [{ label: 'Hasil Depresi', value: depresiData.level }]
-            : []),
-          ...(stressData
-            ? [{ label: 'Hasil Stres', value: stressData.level }]
-            : []),
-        ],
-      });
-
-      setFormValues({
-        name: '',
-        whatsapp: '',
-        email: '',
-        domicile: '',
-      });
-      setFormStatus({
-        type: 'success',
-        message: 'Data Anda sudah terkirim. Tim TRE Indonesia akan menghubungi Anda segera.',
-      });
-    } catch (error) {
-      setFormStatus({
-        type: 'error',
-        message: error.message || 'Terjadi kesalahan saat mengirim form.',
-      });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -239,116 +171,6 @@ function HasilTestKecemasanPage() {
                   </p>
                 </div>
               </article>
-
-              <section className="hasil-good-news">
-                <div className="hasil-good-news-copy">
-                  <h3>Kabar Baiknya..</h3>
-                  <h4>
-                    TRE Hadir Sebagai <span className="text-red">Solusi</span>
-                  </h4>
-                  <p>
-                    Sebuah teknik pemulihan Stress dan Trauma yang ditemukan oleh
-                    Dr. David Berceli, seorang ahli Psychotherapy dan Therapeutic
-                    dari Amerika Serikat dan dibawa <strong>pertama kali ke Indonesia oleh
-                    Hindra Gunawan sejak tahun 2013.</strong>
-                  </p>
-                  <p>
-                    Teknik yang telah tersebar di 90+ negara ini terbukti sangat
-                    efektif, mudah diaplikasikan dan bisa dilakukan kapan saja,
-                    sambil nonton, baca buku bahkan sambil bekerja.
-                  </p>
-                </div>
-                <figure className="hasil-good-news-figure">
-                  <img
-                    src={`${process.env.PUBLIC_URL}/assets/home/hindradavid.png`}
-                    alt="Hindra Gunawan dan Dr. David Berceli"
-                  />
-                  <figcaption>Hindra Gunawan &amp; Dr. David Berceli</figcaption>
-                </figure>
-              </section>
-
-              <section className="hasil-stats">
-                <p className="hasil-stats-intro">
-                  Selama lebih dari 12 tahun menyebarkan teknik TRE di Indonesia,
-                  kami telah
-                </p>
-                <div className="hasil-stats-grid">
-                  <div>
-                    <p>mengadakan</p>
-                    <strong>1,500+</strong>
-                    <span>Pelatihan Online &amp; Offline</span>
-                  </div>
-                  <div>
-                    <p>Kepada lebih dari</p>
-                    <strong>30,000+</strong>
-                    <span>Orang di Indonesia</span>
-                  </div>
-                  <div>
-                    <p>di</p>
-                    <strong>42</strong>
-                    <span>Kota</span>
-                  </div>
-                </div>
-                <p className="hasil-stats-intro">
-                  Jika Anda tertarik untuk ikut mempelajari teknik TRE bersama TRE
-                  Indonesia, dan agar bisa dapat promo spesialnya: segera daftarkan
-                  data diri Anda di form waiting list di bawah ini
-                </p>
-                <div className="hasil-double-arrow" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" focusable="false">
-                    <path d="M6 7l6 6 6-6" />
-                    <path d="M6 13l6 6 6-6" />
-                  </svg>
-                </div>
-              </section>
-
-              <section className="hasil-form-wrap">
-                <form className="hasil-form" onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Nama Lengkap"
-                    value={formValues.name}
-                    onChange={handleChange}
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="whatsapp"
-                    placeholder="Whatsapp"
-                    value={formValues.whatsapp}
-                    onChange={handleChange}
-                    required
-                  />
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Email Aktif"
-                    value={formValues.email}
-                    onChange={handleChange}
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="domicile"
-                    placeholder="Kota Domisili"
-                    value={formValues.domicile}
-                    onChange={handleChange}
-                    required
-                  />
-                  {formStatus.message ? (
-                    <div
-                      className={`form-status${formStatus.type ? ` is-${formStatus.type}` : ''}`}
-                      role="status"
-                    >
-                      {formStatus.message}
-                    </div>
-                  ) : null}
-                  <button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Mengirim...' : 'Saya Daftar Waiting List Seminar'}
-                  </button>
-                </form>
-              </section>
 
               <div className="hasil-test-actions">
                 <Link className="hasil-test-btn primary" to="/tes-kecemasan-berlebih-anxiety">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import './App.css';
 import Footer from './components/Footer';
 import WhatsAppWidget from './components/WhatsAppWidget';
@@ -27,9 +27,11 @@ import FaqPage from './pages/FaqPage';
 import CertifiedTreProviderPage from './pages/CertifiedTreProviderPage';
 import KelasSertifikasiTreProviderPage from './pages/KelasSertifikasiTreProviderPage';
 import OrderReceivedPage from './pages/OrderReceivedPage';
+import { captureUtmParamsFromSearch } from './utils/utm';
 
 function App() {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,6 +43,10 @@ function App() {
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    captureUtmParamsFromSearch(location.search);
+  }, [location.search]);
 
   return (
     <div className="page">

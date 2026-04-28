@@ -6,15 +6,18 @@ import nodemailer from 'nodemailer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {
+  ONLINE_DELIVERY_FEE,
   PAYMENT_COUPON_LOOKUP,
   PAYMENT_METHOD_LOOKUP,
   getCouponDiscount,
   normalizeCouponCode,
 } from '../src/data/paymentConfig.js';
+import { getUpcomingSeminar } from '../src/data/treScheduleData.js';
 import {
   buildTestResultPayload,
   hasCompleteTestResults,
 } from '../src/utils/testResults.js';
+import { buildWhatsAppLink } from '../src/utils/whatsapp.js';
 
 dotenv.config();
 
@@ -37,8 +40,11 @@ const WATZAP_API_BASE_URL = process.env.WATZAP_API_BASE_URL || 'https://api.watz
 const WATZAP_API_KEY = process.env.WATZAP_API_KEY || '';
 const WATZAP_NUMBER_KEY = process.env.WATZAP_NUMBER_KEY || '';
 const WATZAP_ADMIN_PHONE_NUMBERS = process.env.WATZAP_ADMIN_PHONE_NUMBERS || '';
+const WATZAP_CS_NAME = process.env.WATZAP_CS_NAME || '{{cs_name}}';
 const WATZAP_NOTIFY_CUSTOMER = process.env.WATZAP_NOTIFY_CUSTOMER !== 'false';
 const WATZAP_NOTIFY_ADMINS = process.env.WATZAP_NOTIFY_ADMINS !== 'false';
+const FREE_TEST_WHATSAPP_MESSAGE =
+  '[TesGratis] Halo, saya ingin mengetahui informasi lebih lanjut seputar acara seminar yang TRE Indonesia tawarkan.';
 const MIDTRANS_SNAP_BASE_URL = MIDTRANS_IS_PRODUCTION
   ? 'https://app.midtrans.com'
   : 'https://app.sandbox.midtrans.com';
@@ -46,19 +52,30 @@ const MIDTRANS_API_BASE_URL = MIDTRANS_IS_PRODUCTION
   ? 'https://api.midtrans.com'
   : 'https://api.sandbox.midtrans.com';
 const DEFAULT_SEMINAR_PRICE = 299000;
+const NORMAL_SEMINAR_PRICE = 598000;
 const ONLINE_SEMINAR_SLUG = 'online';
 const INDONESIA_TIME_ZONE = 'Asia/Jakarta';
-const GOOGLE_SHEETS_ORDER_COLUMNS = [
-  'Order ID',
-  'Product name (QTY) (SKU)',
-  'Order Total',
-  'Payment Method',
-  'Billing First name',
-  'Billing City',
-  'Email',
-  'Phone',
-  'Created Date',
-];
+const GOOGLE_SHEETS_ORDER_COLUMNS = {
+  order_id: 'Order Id',
+  product_name_qty_sku: 'Product name(QTY)(SKU)',
+  order_total: 'Order Total',
+  payment_method: 'Payment Method',
+  billing_first_name: 'Billing First name',
+  billing_city: 'Billing City',
+  email: 'Email',
+  phone: 'Phone',
+  created_date: 'Created Date',
+  status_follow_up: 'Status Follow Up',
+  utm_source: 'UTM Source',
+  utm_medium: 'UTM Medium',
+  utm_campaign: 'UTM Campaign',
+  utm_content: 'UTM Content',
+  shipping_address: 'Alamat Lengkap',
+  shipping_district: 'Kecamatan',
+  shipping_postal_code: 'Kode Pos',
+  shipping_city: 'Kota Pengiriman',
+  delivery_fee: 'Biaya Ongkir',
+};
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const frontendBuildPath = path.resolve(__dirname, '../build');
@@ -192,6 +209,26 @@ const postJson = async (url, payload) => {
   return parsedBody;
 };
 
+const postGoogleSheetsWebhook = async (payload) => {
+  const response = await postJson(GOOGLE_SHEETS_WEBHOOK_URL, payload);
+
+  if (response?.ok === false || response?.success === false) {
+    throw new Error(
+      response.message || response.error || 'Google Sheets webhook rejected the request.'
+    );
+  }
+
+  return response;
+};
+
+const formatCityNameFromSlug = (slug) =>
+  String(slug ?? '')
+    .trim()
+    .split('-')
+    .filter(Boolean)
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(' ');
+
 const getSeminarConfig = (city, cityName) => {
   if (city === ONLINE_SEMINAR_SLUG) {
     return {
@@ -202,7 +239,7 @@ const getSeminarConfig = (city, cityName) => {
   }
 
   return {
-    label: cityName || `Seminar TRE ${city}`,
+    label: cityName || `Seminar TRE ${formatCityNameFromSlug(city) || city}`,
     price: DEFAULT_SEMINAR_PRICE,
     paymentPath: `/tre-individuals/${city}/payment`,
   };
@@ -248,6 +285,7 @@ const splitCommaSeparatedValues = (value) =>
 const emailLooksValid = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 const formatCurrency = (amount) => `Rp ${Number(amount || 0).toLocaleString('id-ID')}`;
+const formatCompactCurrency = (amount) => formatCurrency(amount).replace(/^Rp\s+/, 'Rp');
 
 const formatDateTimeForIndonesia = (value) => {
   const date = value instanceof Date ? value : new Date(value);
@@ -301,6 +339,85 @@ const getConfiguredAdminPhoneNumbers = () =>
 const getRequestedPaymentMethodLabel = (selectedPaymentMethod) =>
   selectedPaymentMethod?.label || 'Midtrans Snap';
 
+const normalizeUtmParams = (utm = {}) => ({
+  source: normalizeField(utm.source || utm.utm_source),
+  medium: normalizeField(utm.medium || utm.utm_medium),
+  campaign: normalizeField(utm.campaign || utm.utm_campaign),
+  content: normalizeField(utm.content || utm.utm_content),
+});
+
+const getDeliveryFeeForCity = (city) =>
+  normalizeField(city) === ONLINE_SEMINAR_SLUG ? ONLINE_DELIVERY_FEE : 0;
+
+const normalizeShippingAddress = (source = {}) => {
+  const normalizedSource = source || {};
+
+  return {
+    address: normalizeField(
+      normalizedSource.shipping_address ||
+        normalizedSource.shippingAddress ||
+        normalizedSource.address ||
+        normalizedSource.fullAddress ||
+        normalizedSource.alamatLengkap ||
+        normalizedSource.alamat_lengkap
+    ),
+    district: normalizeField(
+      normalizedSource.shipping_district ||
+        normalizedSource.shippingDistrict ||
+        normalizedSource.district ||
+        normalizedSource.kecamatan
+    ),
+    postalCode: normalizeField(
+      normalizedSource.shipping_postal_code ||
+        normalizedSource.shippingPostalCode ||
+        normalizedSource.postalCode ||
+        normalizedSource.postal_code ||
+        normalizedSource.kodePos ||
+        normalizedSource.kode_pos
+    ),
+    city: normalizeField(
+      normalizedSource.shipping_city ||
+        normalizedSource.shippingCity ||
+        normalizedSource.city ||
+        normalizedSource.kota
+    ),
+  };
+};
+
+const hasCompleteShippingAddress = (shippingAddress) =>
+  Boolean(
+    shippingAddress?.address &&
+      shippingAddress?.district &&
+      shippingAddress?.postalCode &&
+      shippingAddress?.city
+  );
+
+const formatShippingAddress = (shippingAddress = {}) => {
+  const normalizedShippingAddress = normalizeShippingAddress(shippingAddress);
+  const areaLine = [
+    normalizedShippingAddress.district
+      ? `Kec. ${normalizedShippingAddress.district}`
+      : '',
+    normalizedShippingAddress.city,
+    normalizedShippingAddress.postalCode,
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  return [normalizedShippingAddress.address, areaLine].filter(Boolean).join('\n');
+};
+
+const getSheetStatusFollowUp = (statusLabel) => {
+  const lookup = {
+    paid: 'Paid',
+    pending: 'Pending',
+    challenge: 'On Hold',
+    failed: 'Cancelled',
+  };
+
+  return lookup[statusLabel] || statusLabel || '';
+};
+
 const formatMidtransPaymentMethod = (paymentType) => {
   const lookup = {
     credit_card: 'Credit / Debit Card',
@@ -319,6 +436,41 @@ const formatMidtransPaymentMethod = (paymentType) => {
   return lookup[paymentType] || paymentType || '';
 };
 
+const getCitySlugFromOrderId = (orderId) => {
+  const match = normalizeField(orderId).match(/^tre-(.+)-\d+$/);
+  return match?.[1] || '';
+};
+
+const getProductNameFromLine = (productLine) =>
+  normalizeField(productLine).replace(/\s+\(\d+\)\s+\([^)]+\)\s*$/, '');
+
+const formatSeminarTime = (time, timezone) =>
+  [normalizeField(time).replace(/\s*-\s*/g, '-'), normalizeField(timezone)]
+    .filter(Boolean)
+    .join(' ');
+
+const getSeminarDetailsForOrder = ({ orderId, citySlug, productLine }) => {
+  const resolvedCitySlug = normalizeField(citySlug) || getCitySlugFromOrderId(orderId);
+  const schedule =
+    resolvedCitySlug && resolvedCitySlug !== ONLINE_SEMINAR_SLUG
+      ? getUpcomingSeminar(resolvedCitySlug)
+      : null;
+  const productName =
+    resolvedCitySlug === ONLINE_SEMINAR_SLUG
+      ? 'Seminar TRE Online'
+      : getProductNameFromLine(productLine) ||
+        `Seminar TRE ${formatCityNameFromSlug(resolvedCitySlug) || resolvedCitySlug}`;
+
+  return {
+    productName,
+    dateLabel: schedule?.dateLabel || 'Segera diumumkan',
+    timeLabel: formatSeminarTime(schedule?.time, schedule?.timezone) || 'Segera diumumkan',
+    location:
+      schedule?.location ||
+      (resolvedCitySlug === ONLINE_SEMINAR_SLUG ? 'Online' : 'Segera diumumkan'),
+  };
+};
+
 const buildPaymentStartRecord = ({
   orderId,
   city,
@@ -329,14 +481,24 @@ const buildPaymentStartRecord = ({
   email,
   whatsapp,
   domicile,
+  shippingAddress,
+  deliveryFee,
+  utm,
   createdAt,
 }) => {
   const sku = `seminar-${city}`;
   const normalizedPhone = normalizePhoneNumber(whatsapp);
+  const normalizedUtm = normalizeUtmParams(utm);
+  const normalizedShippingAddress = normalizeShippingAddress(shippingAddress);
+  const upcomingSeminar = city === ONLINE_SEMINAR_SLUG ? null : getUpcomingSeminar(city);
+  const productDisplayName = upcomingSeminar?.dateLabel
+    ? `${seminar.label} ${upcomingSeminar.dateLabel.replace(/^[^,]+,\s*/, '')}`
+    : seminar.label;
 
   return {
     orderId,
     productName: seminar.label,
+    productDisplayName,
     productQty: 1,
     sku,
     productLine: `${seminar.label} (1) (${sku})`,
@@ -346,29 +508,50 @@ const buildPaymentStartRecord = ({
     billingCity: normalizeField(domicile),
     email: normalizeField(email),
     phone: normalizedPhone || normalizeField(whatsapp),
+    shippingAddress: normalizedShippingAddress.address,
+    shippingDistrict: normalizedShippingAddress.district,
+    shippingPostalCode: normalizedShippingAddress.postalCode,
+    shippingCity: normalizedShippingAddress.city,
+    deliveryFee: Number(deliveryFee || 0),
     createdDate: formatDateTimeForIndonesia(createdAt),
     createdAtIso: createdAt.toISOString(),
+    normalPrice: NORMAL_SEMINAR_PRICE,
+    statusFollowUp: 'Pending',
+    utmSource: normalizedUtm.source,
+    utmMedium: normalizedUtm.medium,
+    utmCampaign: normalizedUtm.campaign,
+    utmContent: normalizedUtm.content,
   };
 };
 
-const getPaymentStartSheetRow = (record) => [
-  record.orderId,
-  record.productLine,
-  record.orderTotal,
-  record.paymentMethod,
-  record.billingFirstName,
-  record.billingCity,
-  record.email,
-  record.phone,
-  record.createdDate,
-];
+const getPaymentStartSheetRow = (record) => ({
+  order_id: record.orderId,
+  product_name_qty_sku: record.productLine,
+  order_total: record.orderTotal,
+  payment_method: record.paymentMethod,
+  billing_first_name: record.billingFirstName,
+  billing_city: record.billingCity,
+  email: record.email,
+  phone: record.phone,
+  created_date: record.createdDate,
+  status_follow_up: record.statusFollowUp,
+  utm_source: record.utmSource,
+  utm_medium: record.utmMedium,
+  utm_campaign: record.utmCampaign,
+  utm_content: record.utmContent,
+  shipping_address: record.shippingAddress,
+  shipping_district: record.shippingDistrict,
+  shipping_postal_code: record.shippingPostalCode,
+  shipping_city: record.shippingCity,
+  delivery_fee: record.deliveryFee,
+});
 
 const pushPaymentStartToGoogleSheets = async (record) => {
   if (!GOOGLE_SHEETS_WEBHOOK_URL) {
     return;
   }
 
-  return postJson(GOOGLE_SHEETS_WEBHOOK_URL, {
+  return postGoogleSheetsWebhook({
     secret: GOOGLE_SHEETS_WEBHOOK_SECRET,
     event: 'payment_started',
     order_id: record.orderId,
@@ -378,17 +561,19 @@ const pushPaymentStartToGoogleSheets = async (record) => {
   });
 };
 
-const updatePaymentMethodInGoogleSheets = async ({ orderId, paymentMethod }) => {
-  if (!GOOGLE_SHEETS_WEBHOOK_URL || !paymentMethod) {
+const updatePaymentInGoogleSheets = async ({ orderId, paymentMethod, statusLabel }) => {
+  if (!GOOGLE_SHEETS_WEBHOOK_URL || (!paymentMethod && !statusLabel)) {
     return;
   }
 
-  return postJson(GOOGLE_SHEETS_WEBHOOK_URL, {
+  return postGoogleSheetsWebhook({
     secret: GOOGLE_SHEETS_WEBHOOK_SECRET,
     event: 'payment_updated',
     order_id: orderId,
     updates: {
       payment_method: paymentMethod,
+      payment_status: statusLabel,
+      status_follow_up: getSheetStatusFollowUp(statusLabel),
     },
   });
 };
@@ -412,20 +597,31 @@ const buildCustomerPaymentStartedMessage = ({
   redirectUrl,
   expiresInHours,
 }) =>
-  [
-    `Halo ${normalizeField(customerName)},`,
-    '',
-    'Pesanan seminar TRE Anda sudah dibuat.',
-    `Order ID: ${record.orderId}`,
-    `Produk: ${record.productLine}`,
-    `Total: ${formatCurrency(record.orderTotal)}`,
-    `Metode Pembayaran: ${record.paymentMethod}`,
-    `Tanggal Dibuat: ${record.createdDate}`,
-    '',
-    `Link pembayaran: ${redirectUrl}`,
-    '',
-    `Silakan selesaikan pembayaran dalam ${expiresInHours} jam.`,
-  ].join('\n');
+  {
+    const firstName = extractFirstName(customerName) || 'Bapak/Ibu';
+    const productName = record.productDisplayName || record.productName || record.productLine;
+
+    return [
+      `*Hai ${firstName}!* 👋`,
+      `Terima kasih sudah mendaftar di *${productName}*`,
+      'Bapak/Ibu berhak dapat *Harga spesial khusus hari ini !* 🎉',
+      '',
+      `Normal ~${formatCompactCurrency(record.normalPrice)}~,`,
+      `PROMO *${formatCompactCurrency(record.orderTotal)}*`,
+      ...(record.deliveryFee > 0
+        ? [`Termasuk Biaya Ongkir buku *${formatCompactCurrency(record.deliveryFee)}*`]
+        : []),
+      '',
+      `Sudah menyelesaikan pembayaran sesuai metode yang dipilih pak/bu ${firstName}?`,
+      '',
+      'Jika belum, silakan selesaikan pembayarannya dengan klik',
+      redirectUrl,
+      '',
+      `*Mohon selesaikan pembayaran dalam ${expiresInHours} jam.*`,
+      '',
+      'Terima kasih 😊',
+    ].join('\n');
+  };
 
 const buildAdminPaymentStartedMessage = ({ record, redirectUrl }) =>
   [
@@ -438,9 +634,94 @@ const buildAdminPaymentStartedMessage = ({ record, redirectUrl }) =>
     `Billing City: ${record.billingCity}`,
     `Email: ${record.email}`,
     `Phone: ${record.phone}`,
+    ...(record.shippingAddress || record.shippingCity || record.deliveryFee > 0
+      ? [
+          `Alamat Pengiriman: ${formatShippingAddress(record) || '-'}`,
+          `Biaya Ongkir: ${formatCurrency(record.deliveryFee)}`,
+        ]
+      : []),
     `Created Date: ${record.createdDate}`,
     `Link pembayaran: ${redirectUrl}`,
   ].join('\n');
+
+const buildCustomerPaymentCompletedMessage = ({ order, paymentPayload }) => {
+  const normalizedOrder = order || {};
+  const orderId = normalizedOrder.order_id || normalizedOrder.orderId || paymentPayload.order_id;
+  const customerName =
+    normalizeField(normalizedOrder.billing_first_name || normalizedOrder.billingFirstName) ||
+    extractFirstName(paymentPayload.customer_details?.first_name) ||
+    'Bpk/Ibu';
+  const amount =
+    normalizedOrder.order_total || normalizedOrder.orderTotal || paymentPayload.gross_amount;
+  const seminar = getSeminarDetailsForOrder({
+    orderId,
+    citySlug: paymentPayload.custom_field1,
+    productLine: normalizedOrder.product_name_qty_sku || normalizedOrder.productLine,
+  });
+  const shippingSummary = formatShippingAddress(normalizedOrder);
+  const deliveryFee = Number(
+    normalizeField(normalizedOrder.delivery_fee || normalizedOrder.deliveryFee).replace(/[^\d]/g, '')
+  );
+  const shippingLines = shippingSummary
+    ? [
+        '',
+        'Alamat pengiriman buku:',
+        `*${shippingSummary}*`,
+        ...(deliveryFee > 0
+          ? [`Biaya Ongkir: *${formatCompactCurrency(deliveryFee)}*`]
+          : []),
+      ]
+    : [];
+
+  return [
+    `Selamat !!! Pembayaran Bpk/Ibu *${customerName}* sejumlah *${formatCompactCurrency(amount)}* sudah kami terima.`,
+    '',
+    `Bpk/Ibu sudah resmi terdaftar menjadi peserta *${seminar.productName}*.`,
+    '',
+    `Hari/Tgl : *${seminar.dateLabel}* | *${seminar.timeLabel}*`,
+    `Tempat : *${seminar.location}*`,
+    ...shippingLines,
+    '',
+    '*Informasi selanjutnya akan kami berikan segera ya.*',
+    `Jika ada yang ingin ditanyakan bisa balas chat ${WATZAP_CS_NAME} di sini`,
+    '',
+    'Terima kasih \u{1F64F}\u{263A}\u{FE0F}',
+  ].join('\n');
+};
+
+const sendPaymentCompletedWatzapNotification = async ({
+  order,
+  paymentPayload,
+  wasAlreadyCompleted,
+}) => {
+  if (
+    !WATZAP_API_KEY ||
+    !WATZAP_NUMBER_KEY ||
+    !WATZAP_NOTIFY_CUSTOMER ||
+    wasAlreadyCompleted
+  ) {
+    return;
+  }
+
+  const customerPhone = normalizePhoneNumber(
+    order?.phone || order?.whatsapp || paymentPayload.customer_details?.phone
+  );
+
+  if (!customerPhone) {
+    console.warn('Skipping completed payment WatZap notification: missing customer phone.', {
+      orderId: paymentPayload.order_id,
+    });
+    return;
+  }
+
+  await sendWatzapMessage({
+    phoneNo: customerPhone,
+    message: buildCustomerPaymentCompletedMessage({
+      order,
+      paymentPayload,
+    }),
+  });
+};
 
 const sendPaymentStartedWatzapNotifications = async ({
   customerName,
@@ -489,6 +770,14 @@ const sendPaymentStartedWatzapNotifications = async ({
   }
 
   await Promise.allSettled(notifications);
+};
+
+const logRejectedAutomationResults = (results, labels) => {
+  results.forEach((result, index) => {
+    if (result.status === 'rejected') {
+      console.error(`${labels[index]} error`, result.reason);
+    }
+  });
 };
 
 const buildFormEmailMarkup = (title, fields) => {
@@ -573,7 +862,66 @@ const sendSupportEmail = async ({ formType, subject, replyTo, fields }) => {
   });
 };
 
-const buildTestResultsEmailMarkup = ({ recipientName, resultSummary, ctaUrl }) => {
+const buildFreeTestGoodNewsEmailMarkup = ({ speakerImageUrl, whatsappUrl }) => `
+  <div style="margin-top:26px;padding:24px;border:1px solid #c8dfef;border-radius:18px;background:#dff0fb;color:#0d4487;">
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">
+      <tr>
+        <td style="vertical-align:top;padding:0 22px 0 0;">
+          <h2 style="margin:0 0 12px;color:#103f7f;font-size:30px;line-height:1.2;">Kabar Baiknya..</h2>
+          <h3 style="margin:0 0 14px;color:#103f7f;font-size:28px;line-height:1.25;">TRE Hadir Sebagai <span style="color:#f52218;">Solusi</span></h3>
+          <p style="margin:0 0 14px;color:#0d4487;line-height:1.7;">
+            Sebuah teknik pemulihan Stress dan Trauma yang ditemukan oleh Dr. David Berceli, seorang ahli Psychotherapy dan Therapeutic dari Amerika Serikat dan dibawa <strong>pertama kali ke Indonesia oleh Hindra Gunawan sejak tahun 2013.</strong>
+          </p>
+          <p style="margin:0;color:#0d4487;line-height:1.7;">
+            Teknik yang telah tersebar di 90+ negara ini terbukti sangat efektif, mudah diaplikasikan dan bisa dilakukan kapan saja, sambil nonton, baca buku bahkan sambil bekerja.
+          </p>
+        </td>
+        <td style="width:190px;vertical-align:top;text-align:center;">
+          <img src="${escapeHtml(speakerImageUrl)}" alt="Hindra Gunawan dan Dr. David Berceli" width="170" style="display:block;width:170px;max-width:170px;border-radius:999px;border:6px solid #ffffff;margin:0 auto 10px;" />
+          <p style="margin:0;color:#0d4487;font-style:italic;font-size:14px;line-height:1.4;">Hindra Gunawan &amp; Dr. David Berceli</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-top:22px;padding:24px;border:1px solid #d9e2ec;border-radius:18px;background:#ffffff;text-align:center;color:#0d4487;">
+    <p style="margin:0 0 18px;color:#0d4487;font-size:19px;line-height:1.6;">
+      Selama lebih dari 12 tahun menyebarkan teknik TRE di Indonesia, kami telah
+    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">
+      <tr>
+        <td style="width:33.333%;padding:10px;text-align:center;">
+          <p style="margin:0 0 6px;color:#0d4487;">mengadakan</p>
+          <strong style="display:block;color:#f24b35;font-size:36px;line-height:1;">1,500+</strong>
+          <span style="display:block;margin-top:8px;color:#0d4487;">Pelatihan Online &amp; Offline</span>
+        </td>
+        <td style="width:33.333%;padding:10px;text-align:center;">
+          <p style="margin:0 0 6px;color:#0d4487;">Kepada lebih dari</p>
+          <strong style="display:block;color:#f24b35;font-size:36px;line-height:1;">30,000+</strong>
+          <span style="display:block;margin-top:8px;color:#0d4487;">Orang di Indonesia</span>
+        </td>
+        <td style="width:33.333%;padding:10px;text-align:center;">
+          <p style="margin:0 0 6px;color:#0d4487;">di</p>
+          <strong style="display:block;color:#f24b35;font-size:36px;line-height:1;">42</strong>
+          <span style="display:block;margin-top:8px;color:#0d4487;">Kota</span>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:22px 0 0;color:#0d4487;font-size:18px;line-height:1.6;">
+      Jika Anda tertarik untuk ikut mempelajari teknik TRE bersama TRE Indonesia dan ingin mengetahui promo spesialnya, klik tombol WhatsApp di bawah ini.
+    </p>
+    <div style="margin-top:22px;">
+      <a href="${escapeHtml(whatsappUrl)}" style="display:inline-block;background:#25d366;color:#ffffff;text-decoration:none;padding:14px 22px;border-radius:999px;font-weight:700;">Chat WhatsApp untuk Info Seminar</a>
+    </div>
+  </div>
+`;
+
+const buildTestResultsEmailMarkup = ({
+  recipientName,
+  resultSummary,
+  speakerImageUrl,
+  whatsappUrl,
+}) => {
   const resultRows = [
     {
       label: 'Jenis Tes',
@@ -654,15 +1002,13 @@ const buildTestResultsEmailMarkup = ({ recipientName, resultSummary, ctaUrl }) =
         <div style="margin-top:22px;padding:16px 18px;border-radius:14px;background:#eef6fc;color:#334e68;line-height:1.6;">
           Hasil tes ini bukan diagnosis medis. Jika Anda merasa kondisi emosional mulai mengganggu keseharian, pertimbangkan untuk berkonsultasi dengan profesional kesehatan mental.
         </div>
-        <div style="margin-top:22px;">
-          <a href="${escapeHtml(ctaUrl)}" style="display:inline-block;background:#f5562f;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:700;">Pelajari TRE Lebih Lanjut</a>
-        </div>
+        ${buildFreeTestGoodNewsEmailMarkup({ speakerImageUrl, whatsappUrl })}
       </div>
     </div>
   `;
 };
 
-const buildTestResultsEmailText = ({ recipientName, resultSummary, ctaUrl }) => {
+const buildTestResultsEmailText = ({ recipientName, resultSummary, whatsappUrl }) => {
   const lines = [
     `Halo ${recipientName},`,
     '',
@@ -678,16 +1024,35 @@ const buildTestResultsEmailText = ({ recipientName, resultSummary, ctaUrl }) => 
     resultSummary.stressData ? `Penjelasan Stress: ${resultSummary.stressData.desc}` : null,
     '',
     'Hasil tes ini bukan diagnosis medis.',
-    `Pelajari TRE lebih lanjut: ${ctaUrl}`,
+    '',
+    'Kabar Baiknya..',
+    'TRE Hadir Sebagai Solusi',
+    'Sebuah teknik pemulihan Stress dan Trauma yang ditemukan oleh Dr. David Berceli dan dibawa pertama kali ke Indonesia oleh Hindra Gunawan sejak tahun 2013.',
+    'Selama lebih dari 12 tahun, TRE Indonesia telah mengadakan 1,500+ pelatihan online dan offline kepada lebih dari 30,000+ orang di 42 kota.',
+    '',
+    `Chat WhatsApp untuk info seminar: ${whatsappUrl}`,
   ];
 
   return lines.filter(Boolean).join('\n');
 };
 
-const sendFreeTestResultsEmail = async ({ name, email, resultSummary, ctaUrl }) => {
+const sendFreeTestResultsEmail = async ({
+  name,
+  email,
+  resultSummary,
+  frontendBaseUrl,
+}) => {
   const subject = `Hasil ${resultSummary.sourceLabel} Anda - TRE Indonesia`;
   const normalizedName = normalizeField(name);
   const normalizedEmail = normalizeField(email);
+  const publicFrontendBaseUrl =
+    getPreferredBaseUrl([
+      frontendBaseUrl,
+      getConfiguredPublicFrontendBaseUrl(),
+      DEFAULT_PUBLIC_FRONTEND_BASE_URL,
+    ]) || DEFAULT_PUBLIC_FRONTEND_BASE_URL;
+  const whatsappUrl = buildWhatsAppLink(FREE_TEST_WHATSAPP_MESSAGE);
+  const speakerImageUrl = `${publicFrontendBaseUrl}/assets/home/hindradavid.png`;
 
   await sendEmail({
     to: normalizedEmail,
@@ -696,12 +1061,13 @@ const sendFreeTestResultsEmail = async ({ name, email, resultSummary, ctaUrl }) 
     text: buildTestResultsEmailText({
       recipientName: normalizedName,
       resultSummary,
-      ctaUrl,
+      whatsappUrl,
     }),
     html: buildTestResultsEmailMarkup({
       recipientName: normalizedName,
       resultSummary,
-      ctaUrl,
+      speakerImageUrl,
+      whatsappUrl,
     }),
     headers: {
       'X-TRE-Email-Type': 'free-test-results',
@@ -789,10 +1155,15 @@ app.post('/api/midtrans/transactions', async (req, res) => {
       email,
       whatsapp,
       domicile,
+      shippingAddress,
       paymentMethod,
       couponCode,
+      utm,
     } = req.body || {};
     const seminar = getSeminarConfig(city, cityName);
+    const isOnlineSeminar = city === ONLINE_SEMINAR_SLUG;
+    const normalizedShippingAddress = normalizeShippingAddress(shippingAddress);
+    const deliveryFee = getDeliveryFeeForCity(city);
     const normalizedCouponCode = normalizeCouponCode(couponCode);
     const appliedCoupon = normalizedCouponCode
       ? PAYMENT_COUPON_LOOKUP[normalizedCouponCode]
@@ -800,10 +1171,17 @@ app.post('/api/midtrans/transactions', async (req, res) => {
     const selectedPaymentMethod = paymentMethod
       ? PAYMENT_METHOD_LOOKUP[paymentMethod]
       : null;
-    const grossAmount = seminar.price - getCouponDiscount(appliedCoupon, seminar.price);
+    const couponDiscount = getCouponDiscount(appliedCoupon, seminar.price);
+    const grossAmount = seminar.price + deliveryFee - couponDiscount;
 
     if (!city || !name || !email || !whatsapp || !domicile) {
       return res.status(400).json({ message: 'Semua field wajib diisi.' });
+    }
+
+    if (isOnlineSeminar && !hasCompleteShippingAddress(normalizedShippingAddress)) {
+      return res.status(400).json({
+        message: 'Alamat pengiriman buku wajib diisi lengkap.',
+      });
     }
 
     if (paymentMethod && !selectedPaymentMethod) {
@@ -831,19 +1209,30 @@ app.post('/api/midtrans/transactions', async (req, res) => {
     }
 
     const callbackBaseUrl = `${frontendBaseUrl}${seminar.paymentPath}`;
+    const itemDetails = [
+      {
+        id: `seminar-${city}`,
+        price: seminar.price - couponDiscount,
+        quantity: 1,
+        name: seminar.label,
+      },
+    ];
+
+    if (deliveryFee > 0) {
+      itemDetails.push({
+        id: `ongkir-buku-${city}`,
+        price: deliveryFee,
+        quantity: 1,
+        name: 'Biaya Ongkir Buku',
+      });
+    }
+
     const transactionPayload = {
       transaction_details: {
         order_id: orderId,
         gross_amount: grossAmount,
       },
-      item_details: [
-        {
-          id: `seminar-${city}`,
-          price: grossAmount,
-          quantity: 1,
-          name: seminar.label,
-        },
-      ],
+      item_details: itemDetails,
       customer_details: {
         first_name: name,
         email,
@@ -861,6 +1250,17 @@ app.post('/api/midtrans/transactions', async (req, res) => {
         duration: 24,
       },
     };
+
+    if (isOnlineSeminar) {
+      transactionPayload.customer_details.shipping_address = {
+        first_name: name,
+        phone: whatsapp,
+        address: formatShippingAddress(normalizedShippingAddress).replace(/\n/g, ', '),
+        city: normalizedShippingAddress.city,
+        postal_code: normalizedShippingAddress.postalCode,
+        country_code: 'IDN',
+      };
+    }
 
     if (appliedCoupon) {
       transactionPayload.custom_field3 = appliedCoupon.code;
@@ -904,6 +1304,9 @@ app.post('/api/midtrans/transactions', async (req, res) => {
       email,
       whatsapp,
       domicile,
+      shippingAddress: normalizedShippingAddress,
+      deliveryFee,
+      utm,
       createdAt,
     });
 
@@ -918,6 +1321,15 @@ app.post('/api/midtrans/transactions', async (req, res) => {
             { label: 'Email', value: email },
             { label: 'Whatsapp', value: whatsapp },
             { label: 'Kota Domisili', value: domicile },
+            ...(isOnlineSeminar
+              ? [
+                  { label: 'Alamat Lengkap', value: normalizedShippingAddress.address },
+                  { label: 'Kecamatan', value: normalizedShippingAddress.district },
+                  { label: 'Kode Pos', value: normalizedShippingAddress.postalCode },
+                  { label: 'Kota Pengiriman', value: normalizedShippingAddress.city },
+                  { label: 'Biaya Ongkir', value: formatCurrency(deliveryFee) },
+                ]
+              : []),
             { label: 'Seminar', value: seminar.label },
             { label: 'Order ID', value: orderId },
             {
@@ -927,10 +1339,10 @@ app.post('/api/midtrans/transactions', async (req, res) => {
             {
               label: 'Kupon',
               value: appliedCoupon
-                ? `${appliedCoupon.code} (-${getCouponDiscount(appliedCoupon, seminar.price).toLocaleString('id-ID')})`
+                ? `${appliedCoupon.code} (-${couponDiscount.toLocaleString('id-ID')})`
                 : 'Tidak ada',
             },
-            { label: 'Total', value: grossAmount.toLocaleString('id-ID') },
+            { label: 'Total', value: formatCurrency(grossAmount) },
           ],
         });
       } catch (mailError) {
@@ -938,7 +1350,7 @@ app.post('/api/midtrans/transactions', async (req, res) => {
       }
     }
 
-    await Promise.allSettled([
+    const automationResults = await Promise.allSettled([
       pushPaymentStartToGoogleSheets(paymentStartRecord),
       sendPaymentStartedWatzapNotifications({
         customerName: name,
@@ -947,6 +1359,10 @@ app.post('/api/midtrans/transactions', async (req, res) => {
         redirectUrl: payload.redirect_url,
         expiresInHours: transactionPayload.expiry.duration,
       }),
+    ]);
+    logRejectedAutomationResults(automationResults, [
+      'Google Sheets payment start',
+      'WatZap payment start notification',
     ]);
 
     return res.json({
@@ -1050,7 +1466,7 @@ app.post('/api/tests/send-results', async (req, res) => {
       name,
       email,
       resultSummary,
-      ctaUrl: `${trimTrailingSlash(frontendBaseUrl)}/belajar-tre`,
+      frontendBaseUrl,
     });
 
     return res.json({
@@ -1082,13 +1498,28 @@ app.post('/api/midtrans/notifications', async (req, res) => {
     statusLabel,
   });
 
+  let sheetUpdateResult;
+
   try {
-    await updatePaymentMethodInGoogleSheets({
+    sheetUpdateResult = await updatePaymentInGoogleSheets({
       orderId: payload.order_id,
       paymentMethod: formatMidtransPaymentMethod(payload.payment_type),
+      statusLabel,
     });
   } catch (error) {
     console.error('Google Sheets payment update error', error);
+  }
+
+  try {
+    if (statusLabel === 'paid') {
+      await sendPaymentCompletedWatzapNotification({
+        order: sheetUpdateResult?.order,
+        paymentPayload: payload,
+        wasAlreadyCompleted: sheetUpdateResult?.wasAlreadyCompleted,
+      });
+    }
+  } catch (error) {
+    console.error('WatZap completed payment notification error', error);
   }
 
   // Persist payment status here when you add a database or CRM.

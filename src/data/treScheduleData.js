@@ -66,7 +66,7 @@ const seminarScheduleByCity = {
   ],
   kudus: [],
   lampung: [
-    { date: '2026-06-25', time: '09.00 - 12.00', timezone: 'WIB', location: 'Segera Diumumkan'},
+    { date: '2026-06-27', time: '09.00 - 12.00', timezone: 'WIB', location: 'Segera Diumumkan'},
   ],
   lombok: [
     { date: '2026-05-16', time: '09.00 - 12.00', timezone: 'WITA', location: 'Hotel Lombok Raya'},
@@ -89,7 +89,7 @@ const seminarScheduleByCity = {
   ],
   medan: [
     { date: '2026-04-18', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel Grand Mercure Medan Angkasa'},
-    { date: '2026-06-20', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel Grand Mercure Medan Angkasa'},
+    { date: '2026-06-13', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel Grand Mercure Medan Angkasa'},
     { date: '2026-08-08', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel Grand Mercure Medan Angkasa'},
     { date: '2026-10-03', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel Grand Mercure Medan Angkasa'},
     { date: '2026-11-28', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel Grand Mercure Medan Angkasa'},
@@ -118,7 +118,7 @@ const seminarScheduleByCity = {
   ],
   purwokerto: [],
   samarinda: [
-    { date: '2026-05-09', time: '09.00 - 12.00', timezone: 'WIB', location: 'Segera Diumumkan'},
+    { date: '2026-05-09', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel YELLO Samarinda'},
   ],
   semarang: [
     { date: '2026-05-16', time: '09.00 - 12.00', timezone: 'WIB', location: 'Rooms Inc Hotel Pemuda Semarang'},
@@ -137,6 +137,7 @@ const seminarScheduleByCity = {
   ],
   'tangerang-selatan': [
     { date: '2026-04-18', time: '08.30 - 12.00', timezone: 'WIB', location: 'Trembesi Hotel, BSD Serpong'},
+    { date: '2026-05-23', time: '08.30 - 12.00', timezone: 'WIB', location: 'Trembesi Hotel, BSD Serpong'},
     { date: '2026-06-20', time: '08.30 - 12.00', timezone: 'WIB', location: 'Trembesi Hotel, BSD Serpong'},
     { date: '2026-07-18', time: '08.30 - 12.00', timezone: 'WIB', location: 'Trembesi Hotel, BSD Serpong'},
     { date: '2026-08-15', time: '08.30 - 12.00', timezone: 'WIB', location: 'Trembesi Hotel, BSD Serpong'},

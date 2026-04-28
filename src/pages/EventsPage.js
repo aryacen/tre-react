@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { pastEvents, upcomingEvent } from '../data/eventsData';
 
+const emptyUpcomingText =
+  'Saat ini belum ada acara mendatang yang dijadwalkan. Silakan cek kembali secara berkala untuk mendapatkan informasi dan jadwal terbaru dari TRE Indonesia.';
+
 function EventMetaIcon({ type }) {
   if (type === 'date') {
     return (
@@ -58,7 +61,7 @@ function EventMetaIcon({ type }) {
   );
 }
 
-function EventCard({ event, featured = false, status, to }) {
+function EventCard({ event, featured = false, to }) {
   const cardContent = (
     <>
       <div
@@ -70,13 +73,7 @@ function EventCard({ event, featured = false, status, to }) {
         }}
         aria-label={event.title}
         role="img"
-      >
-        {status ? (
-          <div className="events-card-badges">
-            <span className="events-card-badge events-card-badge-muted">{status}</span>
-          </div>
-        ) : null}
-      </div>
+      />
       <div className="events-card-body">
         <h3>{event.title}</h3>
         <div className="events-card-meta">
@@ -139,9 +136,15 @@ function EventsPage() {
             <span className="events-section-bar" aria-hidden="true" />
             <h2>Acara Mendatang</h2>
           </div>
-          <div className="events-featured-grid">
-            <EventCard event={upcomingEvent} featured to={`/events/${upcomingEvent.slug}`} />
-          </div>
+          {upcomingEvent ? (
+            <div className="events-featured-grid">
+              <EventCard event={upcomingEvent} featured to={`/events/${upcomingEvent.slug}`} />
+            </div>
+          ) : (
+            <div className="events-empty">
+              <p>{emptyUpcomingText}</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -153,14 +156,27 @@ function EventsPage() {
           </div>
           <div className="events-grid">
             {pastEvents.map((event) => (
-              <EventCard
-                event={event}
-                status="Acara selesai"
-                key={event.slug}
-                to={`/events/${event.slug}`}
-              />
+              <EventCard event={event} key={event.slug} to={`/events/${event.slug}`} />
             ))}
           </div>
+        </div>
+      </section>
+
+      <section
+        className="cta-section cta-northlights"
+        style={{
+          '--cta-bg': `url(${process.env.PUBLIC_URL}/assets/home/TRE1.webp)`,
+        }}
+      >
+        <div className="cta-content">
+          <p>Temukan Layanan TRE yang Sesuai untuk Anda</p>
+          <h>
+            Jelajahi berbagai pilihan layanan yang dirancang untuk memenuhi
+            kebutuhan dan kondisi Anda dengan fleksibel.
+          </h>
+          <Link className="cta-button" to="/belajar-tre">
+            Lihat Layanan Seminar
+          </Link>
         </div>
       </section>
     </div>

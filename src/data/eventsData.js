@@ -1,4 +1,4 @@
-export const upcomingEvent = {
+const angkatan1000Event = {
   slug: 'angkatan-1000',
   title: 'Workshop TRE Angkatan 1000',
   date: '26 April 2026',
@@ -12,17 +12,17 @@ export const upcomingEvent = {
     'Acara ini akan diselenggarakan pada <strong>Minggu, 26 April 2026</strong>, pukul <strong>09.00–17.30 WIB</strong>, di <strong>Mövenpick Hotel Jakarta City Centre</strong>. Peserta akan mendapatkan kesempatan langka untuk belajar langsung dari <strong>Hindra Gunawan</strong> sebagai Founder TRE Indonesia, <strong>Dr. David Berceli</strong> sebagai pencipta TRE®, <strong>Chris Balsley</strong>, serta <strong>Simba Stenqvist</strong>, didampingi oleh para provider TRE Indonesia.',
     'Dalam workshop ini, peserta akan mempelajari prinsip-prinsip inti yang mendukung regulasi tubuh dan sistem saraf, termasuk pendekatan <strong>Internal Alchemy</strong>, <strong>breathwork</strong>, <strong>grounding</strong>, dan <strong>gerakan berbasis fasia</strong>. Pembelajaran dirancang untuk membantu peserta memperoleh tremor TRE yang lebih efektif, meningkatkan regulasi emosi, memperdalam rasa hadir dan grounded, serta mendukung aliran fasia, postur, dan koherensi energi yang lebih baik.',
   ],
-  image: '/assets/home/1000.jpeg',
-  imagePosition: 'center 16%',
-  imageSize: '72%',
+  image: '/assets/home/angkatan1000.png',
+  imagePosition: 'center',
+  imageSize: 'cover',
   media: [
+    {
+      type: 'image',
+      src: '/assets/home/angkatan1000.png',
+    },
     {
       type: 'video',
       src: '/assets/home/drdavid1000.mp4',
-    },
-    {
-      type: 'image',
-      src: '/assets/home/1000_1.jpg',
     },
     {
       type: 'image',
@@ -58,7 +58,7 @@ export const upcomingEvent = {
     },
   ],
   gallery: [
-    '/assets/home/1000_1.jpg',
+    '/assets/home/angkatan1000.png',
     '/assets/home/1000_2.jpg',
     '/assets/home/1000_3.jpg',
     '/assets/home/1000_4.jpg',
@@ -70,12 +70,15 @@ export const upcomingEvent = {
   ],
   registerUrl: '/assets/home/1000.pdf',
   ctaLabel: 'Register Now',
-  showCta: true,
+  showCta: false,
   whatsappMessage:
     '[WEB] Halo, saya ingin mengetahui informasi lebih lanjut seputar acara workshop TRE angkatan 1000.',
 };
 
+export const upcomingEvent = null;
+
 export const pastEvents = [
+  angkatan1000Event,
   {
     slug: 'tre-workshop-dr-david-2018',
     title: 'TRE Workshop with Dr. David 2018',
@@ -124,7 +127,7 @@ export const pastEvents = [
   },
 ];
 
-export const allEvents = [upcomingEvent, ...pastEvents];
+export const allEvents = [...(upcomingEvent ? [upcomingEvent] : []), ...pastEvents];
 
 export function findEventBySlug(slug) {
   return allEvents.find((event) => event.slug === slug) || null;

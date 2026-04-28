@@ -29,7 +29,7 @@ const cityRecords = [
   { name: 'Semarang', image: 'semarang.jpg', speakerName: 'Juli Wati Zeng' },
   { name: 'Solo', image: 'solo.png', speakerName: 'Juli Wati Zeng' },
   { name: 'Sorong', image: 'sorong.jpeg', speakerName: 'Ivonne Somar' },
-  { name: 'Surabaya', image: 'surabaya.jpg', speakerName: 'Ice Carlianti' },
+  { name: 'Surabaya', image: 'surabaya.jpg', speakerName: 'Hindra Gunawan' },
   { name: 'Tangerang Selatan', image: 'tangerang.jpg', speakerName: 'Hindra Gunawan' },
   { name: 'Tanjung Pinang', image: 'tanjungpinang.jpg', speakerName: 'Johannes' },
   { name: 'Tasikmalaya', image: 'tasikmalaya.jpeg', speakerName: 'Femi Lusiyani Dewi' },
