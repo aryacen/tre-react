@@ -578,6 +578,19 @@ const updatePaymentInGoogleSheets = async ({ orderId, paymentMethod, statusLabel
   });
 };
 
+const syncOrderPaymentStatusToGoogleSheets = async ({
+  orderId,
+  paymentType,
+  transactionStatus,
+  fraudStatus,
+  statusLabel = getPaymentStatusLabel(transactionStatus, fraudStatus),
+}) =>
+  updatePaymentInGoogleSheets({
+    orderId,
+    paymentMethod: formatMidtransPaymentMethod(paymentType),
+    statusLabel,
+  });
+
 const sendWatzapMessage = async ({ phoneNo, message }) => {
   if (!WATZAP_API_KEY || !WATZAP_NUMBER_KEY || !phoneNo || !message) {
     return;
@@ -1405,6 +1418,20 @@ app.get('/api/midtrans/transactions/:orderId/status', async (req, res) => {
       });
     }
 
+    const statusLabel = getPaymentStatusLabel(payload.transaction_status, payload.fraud_status);
+
+    try {
+      await syncOrderPaymentStatusToGoogleSheets({
+        orderId: payload.order_id || orderId,
+        paymentType: payload.payment_type,
+        transactionStatus: payload.transaction_status,
+        fraudStatus: payload.fraud_status,
+        statusLabel,
+      });
+    } catch (error) {
+      console.error('Google Sheets status sync error', error);
+    }
+
     return res.json({
       order_id: payload.order_id,
       transaction_status: payload.transaction_status,
@@ -1412,7 +1439,7 @@ app.get('/api/midtrans/transactions/:orderId/status', async (req, res) => {
       payment_type: payload.payment_type,
       status_code: payload.status_code,
       gross_amount: payload.gross_amount,
-      status_label: getPaymentStatusLabel(payload.transaction_status, payload.fraud_status),
+      status_label: statusLabel,
     });
   } catch (error) {
     console.error('Midtrans status error', error);
@@ -1501,9 +1528,11 @@ app.post('/api/midtrans/notifications', async (req, res) => {
   let sheetUpdateResult;
 
   try {
-    sheetUpdateResult = await updatePaymentInGoogleSheets({
+    sheetUpdateResult = await syncOrderPaymentStatusToGoogleSheets({
       orderId: payload.order_id,
-      paymentMethod: formatMidtransPaymentMethod(payload.payment_type),
+      paymentType: payload.payment_type,
+      transactionStatus: payload.transaction_status,
+      fraudStatus: payload.fraud_status,
       statusLabel,
     });
   } catch (error) {
