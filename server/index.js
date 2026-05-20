@@ -24,7 +24,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || '';
-const DEFAULT_PUBLIC_FRONTEND_BASE_URL = 'https://treindonesia.com';
+const DEFAULT_PUBLIC_FRONTEND_BASE_URL = 'https://www.treindonesia.com';
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const MIDTRANS_IS_PRODUCTION = process.env.MIDTRANS_IS_PRODUCTION === 'true';
 const SMTP_HOST = process.env.SMTP_HOST;
@@ -55,6 +55,7 @@ const DEFAULT_SEMINAR_PRICE = 299000;
 const NORMAL_SEMINAR_PRICE = 598000;
 const ONLINE_SEMINAR_SLUG = 'online';
 const INDONESIA_TIME_ZONE = 'Asia/Jakarta';
+const FREE_TEST_LEAD_SOURCE = 'Leads Web';
 const GOOGLE_SHEETS_ORDER_COLUMNS = {
   order_id: 'Order Id',
   product_name_qty_sku: 'Product name(QTY)(SKU)',
@@ -86,6 +87,10 @@ if (!MIDTRANS_SERVER_KEY) {
 
 if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS || !SMTP_FROM_EMAIL) {
   console.warn('SMTP configuration is incomplete. Form email delivery is disabled.');
+}
+
+if (!GOOGLE_SHEETS_WEBHOOK_URL) {
+  console.warn('Missing GOOGLE_SHEETS_WEBHOOK_URL in environment. Sheet automation is disabled.');
 }
 
 const trimTrailingSlash = (value) => String(value ?? '').replace(/\/+$/, '');
@@ -137,8 +142,8 @@ const getFrontendBaseUrl = (req) => {
   const derivedBaseUrl = protocol && hostname ? `${protocol}://${hostname}` : '';
 
   const publicBaseUrl = getPreferredBaseUrl([
-    configuredBaseUrl,
     requestOrigin,
+    configuredBaseUrl,
     derivedBaseUrl,
   ]);
 
@@ -418,6 +423,16 @@ const getSheetStatusFollowUp = (statusLabel) => {
   return lookup[statusLabel] || statusLabel || '';
 };
 
+const GOOGLE_SHEETS_PAYMENT_STATUS_LABELS = new Set([
+  'paid',
+  'pending',
+  'challenge',
+  'failed',
+]);
+
+const shouldSyncPaymentStatusToGoogleSheets = (statusLabel) =>
+  GOOGLE_SHEETS_PAYMENT_STATUS_LABELS.has(normalizeField(statusLabel));
+
 const formatMidtransPaymentMethod = (paymentType) => {
   const lookup = {
     credit_card: 'Credit / Debit Card',
@@ -451,10 +466,7 @@ const formatSeminarTime = (time, timezone) =>
 
 const getSeminarDetailsForOrder = ({ orderId, citySlug, productLine }) => {
   const resolvedCitySlug = normalizeField(citySlug) || getCitySlugFromOrderId(orderId);
-  const schedule =
-    resolvedCitySlug && resolvedCitySlug !== ONLINE_SEMINAR_SLUG
-      ? getUpcomingSeminar(resolvedCitySlug)
-      : null;
+  const schedule = resolvedCitySlug ? getUpcomingSeminar(resolvedCitySlug) : null;
   const productName =
     resolvedCitySlug === ONLINE_SEMINAR_SLUG
       ? 'Seminar TRE Online'
@@ -490,7 +502,7 @@ const buildPaymentStartRecord = ({
   const normalizedPhone = normalizePhoneNumber(whatsapp);
   const normalizedUtm = normalizeUtmParams(utm);
   const normalizedShippingAddress = normalizeShippingAddress(shippingAddress);
-  const upcomingSeminar = city === ONLINE_SEMINAR_SLUG ? null : getUpcomingSeminar(city);
+  const upcomingSeminar = getUpcomingSeminar(city);
   const productDisplayName = upcomingSeminar?.dateLabel
     ? `${seminar.label} ${upcomingSeminar.dateLabel.replace(/^[^,]+,\s*/, '')}`
     : seminar.label;
@@ -561,6 +573,26 @@ const pushPaymentStartToGoogleSheets = async (record) => {
   });
 };
 
+const buildFreeTestLeadRecord = ({ name, email, createdAt }) => ({
+  tanggal: formatDateTimeForIndonesia(createdAt),
+  nama: normalizeField(name),
+  email: normalizeField(email),
+  sumber: FREE_TEST_LEAD_SOURCE,
+});
+
+const pushFreeTestLeadToGoogleSheets = async (record) => {
+  if (!GOOGLE_SHEETS_WEBHOOK_URL) {
+    return;
+  }
+
+  return postGoogleSheetsWebhook({
+    secret: GOOGLE_SHEETS_WEBHOOK_SECRET,
+    event: 'free_test_lead_created',
+    row: record,
+    lead: record,
+  });
+};
+
 const updatePaymentInGoogleSheets = async ({ orderId, paymentMethod, statusLabel }) => {
   if (!GOOGLE_SHEETS_WEBHOOK_URL || (!paymentMethod && !statusLabel)) {
     return;
@@ -583,13 +615,26 @@ const syncOrderPaymentStatusToGoogleSheets = async ({
   paymentType,
   transactionStatus,
   fraudStatus,
-  statusLabel = getPaymentStatusLabel(transactionStatus, fraudStatus),
-}) =>
-  updatePaymentInGoogleSheets({
+  statusLabel,
+}) => {
+  const resolvedStatusLabel = statusLabel || getPaymentStatusLabel(transactionStatus, fraudStatus);
+
+  if (!shouldSyncPaymentStatusToGoogleSheets(resolvedStatusLabel)) {
+    console.warn('Skipping Google Sheets status sync for unsupported payment status.', {
+      orderId,
+      transactionStatus,
+      fraudStatus,
+      statusLabel: resolvedStatusLabel,
+    });
+    return null;
+  }
+
+  return updatePaymentInGoogleSheets({
     orderId,
     paymentMethod: formatMidtransPaymentMethod(paymentType),
-    statusLabel,
+    statusLabel: resolvedStatusLabel,
   });
+};
 
 const sendWatzapMessage = async ({ phoneNo, message }) => {
   if (!WATZAP_API_KEY || !WATZAP_NUMBER_KEY || !phoneNo || !message) {
@@ -1222,6 +1267,7 @@ app.post('/api/midtrans/transactions', async (req, res) => {
     }
 
     const callbackBaseUrl = `${frontendBaseUrl}${seminar.paymentPath}`;
+    const paymentNotificationUrl = `${frontendBaseUrl}/api/midtrans/notifications`;
     const itemDetails = [
       {
         id: `seminar-${city}`,
@@ -1289,6 +1335,7 @@ app.post('/api/midtrans/transactions', async (req, res) => {
         'Content-Type': 'application/json',
         Accept: 'application/json',
         Authorization: buildBasicAuthHeader(MIDTRANS_SERVER_KEY),
+        'X-Override-Notification': paymentNotificationUrl,
       },
       body: JSON.stringify(transactionPayload),
     });
@@ -1496,6 +1543,18 @@ app.post('/api/tests/send-results', async (req, res) => {
       frontendBaseUrl,
     });
 
+    try {
+      await pushFreeTestLeadToGoogleSheets(
+        buildFreeTestLeadRecord({
+          name,
+          email,
+          createdAt: new Date(),
+        })
+      );
+    } catch (sheetError) {
+      console.error('Google Sheets free test lead error', sheetError);
+    }
+
     return res.json({
       message: `Hasil tes berhasil dikirim ke ${normalizeField(email)}.`,
     });
@@ -1526,6 +1585,7 @@ app.post('/api/midtrans/notifications', async (req, res) => {
   });
 
   let sheetUpdateResult;
+  let sheetUpdateError = null;
 
   try {
     sheetUpdateResult = await syncOrderPaymentStatusToGoogleSheets({
@@ -1536,6 +1596,7 @@ app.post('/api/midtrans/notifications', async (req, res) => {
       statusLabel,
     });
   } catch (error) {
+    sheetUpdateError = error;
     console.error('Google Sheets payment update error', error);
   }
 
@@ -1549,6 +1610,14 @@ app.post('/api/midtrans/notifications', async (req, res) => {
     }
   } catch (error) {
     console.error('WatZap completed payment notification error', error);
+  }
+
+  if (sheetUpdateError) {
+    return res.status(502).json({
+      received: false,
+      status: statusLabel,
+      message: 'Google Sheets payment update failed.',
+    });
   }
 
   // Persist payment status here when you add a database or CRM.

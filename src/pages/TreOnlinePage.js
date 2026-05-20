@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import { getUpcomingSeminar } from '../data/treScheduleData';
 
 const ONLINE_SPEAKER = {
   name: 'Hindra Gunawan',
@@ -11,35 +12,13 @@ const ONLINE_SPEAKER = {
   ],
 };
 
-const BASE_EVENT_DATE = new Date(2026, 1, 14);
-const EVENT_INTERVAL_DAYS = 14;
-
-const getNextEventDate = (today = new Date()) => {
-  const normalizedToday = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
-  const nextDate = new Date(BASE_EVENT_DATE);
-
-  while (normalizedToday > nextDate) {
-    nextDate.setDate(nextDate.getDate() + EVENT_INTERVAL_DAYS);
-  }
-
-  return nextDate;
-};
-
-const formatEventDate = (date) =>
-  new Intl.DateTimeFormat('id-ID', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(date);
-
 function TreOnlinePage() {
-  const nextEventDate = getNextEventDate();
-  const eventDateLabel = formatEventDate(nextEventDate);
+  const upcomingOnlineSeminar = getUpcomingSeminar('online');
+  const eventDateLabel = upcomingOnlineSeminar?.dateLabel || 'Segera diumumkan';
+  const eventTimeLabel = upcomingOnlineSeminar?.time
+    ? `${upcomingOnlineSeminar.time} ${upcomingOnlineSeminar.timezone}`
+    : 'Segera diumumkan';
+  const eventLocation = upcomingOnlineSeminar?.location || 'Online via ZOOM';
 
   return (
     <div className="tre-city-page">
@@ -80,11 +59,11 @@ function TreOnlinePage() {
               <div className="tre-city-info-grid">
                 <div className="tre-city-info-card">
                   <span>Waktu</span>
-                  <strong>{eventDateLabel} | 13.00 - 15.30 WIB</strong>
+                  <strong>{eventDateLabel} | {eventTimeLabel}</strong>
                 </div>
                 <div className="tre-city-info-card">
                   <span>Lokasi</span>
-                  <strong>Online via ZOOM</strong>
+                  <strong>{eventLocation}</strong>
                 </div>
               </div>
               <div className="tre-city-action-card">

@@ -1,5 +1,11 @@
 const SPREADSHEET_ID = '10pKfHYCbwtlvXuuCchm1I5pDi4Bh58RUvVJfqbLWxE4';
+const LEAD_MAGNET_SPREADSHEET_ID = '12aoh6enGOns26uAf0jdwr83xaz1-b9PSEFQ6lzmvb9s';
+const LEAD_MAGNET_SHEET_NAME = 'Tes Gratis';
 const WEBHOOK_SECRET = 'replace-this-with-a-random-secret';
+const SCRIPT_VERSION = '2026-05-20-lead-magnet-next-data-row';
+const ORDER_EXPIRY_HOURS = 24;
+const ORDER_EXPIRY_MS = ORDER_EXPIRY_HOURS * 60 * 60 * 1000;
+const LEAD_MAGNET_DEFAULT_SOURCE = 'Leads Web';
 
 const SHEET_NAMES = {
   pending: 'Pending Orders',
@@ -14,6 +20,9 @@ const ORDER_SHEET_NAMES = [
   SHEET_NAMES.cancelled,
   SHEET_NAMES.completed,
 ];
+
+const FIRST_ORDER_ROW = 2;
+const FIRST_LEAD_MAGNET_ROW = 2;
 
 const COLUMN_MAP = {
   order_id: 1,
@@ -60,6 +69,19 @@ const HEADER_MAP = {
 };
 
 const MAX_ORDER_COLUMN = 39;
+const LEAD_MAGNET_COLUMN_MAP = {
+  tanggal: 1,
+  nama: 2,
+  email: 3,
+  sumber: 8,
+};
+const LEAD_MAGNET_HEADER_MAP = {
+  tanggal: 'Tanggal',
+  nama: 'Nama',
+  email: 'Email',
+  sumber: 'Sumber',
+};
+const MAX_LEAD_MAGNET_COLUMN = 8;
 
 function doPost(e) {
   try {
@@ -76,6 +98,14 @@ function doPost(e) {
     }
 
     ensureOrderSheetHeaders_(spreadsheet);
+
+    if (payload.event === 'cancel_expired_pending') {
+      return jsonResponse_(handleExpiredPendingOrders_(spreadsheet, payload));
+    }
+
+    if (payload.event === 'free_test_lead_created') {
+      return jsonResponse_(handleFreeTestLeadCreated_(payload));
+    }
 
     if (payload.event === 'payment_started') {
       return jsonResponse_(handlePaymentStarted_(spreadsheet, payload));
@@ -95,13 +125,203 @@ function getDiagnosticStatus_(spreadsheet) {
   return {
     ok: true,
     event: 'diagnostic',
+    scriptVersion: SCRIPT_VERSION,
+    insertMode: 'next_empty_order_data_row',
+    expiryHours: ORDER_EXPIRY_HOURS,
     spreadsheetId: SPREADSHEET_ID,
+    leadMagnet: getLeadMagnetDiagnosticStatus_(),
     sheets: ORDER_SHEET_NAMES.map(function (sheetName) {
       return {
         name: sheetName,
         exists: Boolean(spreadsheet.getSheetByName(sheetName)),
+        nextAvailableRow: spreadsheet.getSheetByName(sheetName)
+          ? findNextAvailableOrderRow_(spreadsheet.getSheetByName(sheetName))
+          : null,
       };
     }),
+  };
+}
+
+function getLeadMagnetDiagnosticStatus_() {
+  const spreadsheet = SpreadsheetApp.openById(LEAD_MAGNET_SPREADSHEET_ID);
+  const sheet = spreadsheet.getSheetByName(LEAD_MAGNET_SHEET_NAME);
+
+  return {
+    spreadsheetId: LEAD_MAGNET_SPREADSHEET_ID,
+    sheetName: LEAD_MAGNET_SHEET_NAME,
+    exists: Boolean(sheet),
+    nextAvailableRow: sheet ? findNextAvailableLeadMagnetRow_(sheet) : null,
+  };
+}
+
+function handleFreeTestLeadCreated_(payload) {
+  const spreadsheet = SpreadsheetApp.openById(LEAD_MAGNET_SPREADSHEET_ID);
+  const sheet = getLeadMagnetSheet_(spreadsheet);
+  ensureLeadMagnetHeaders_(sheet);
+
+  const leadData = normalizeLeadMagnetData_(payload.row || payload.lead || {});
+  const rowIndex = upsertLeadMagnetRow_(sheet, leadData);
+
+  return {
+    ok: true,
+    event: payload.event,
+    scriptVersion: SCRIPT_VERSION,
+    spreadsheetId: LEAD_MAGNET_SPREADSHEET_ID,
+    sheetName: sheet.getName(),
+    rowIndex: rowIndex,
+    lead: leadData,
+  };
+}
+
+function getLeadMagnetSheet_(spreadsheet) {
+  const sheet = spreadsheet.getSheetByName(LEAD_MAGNET_SHEET_NAME);
+
+  if (!sheet) {
+    throw new Error('Lead magnet sheet not found: ' + LEAD_MAGNET_SHEET_NAME);
+  }
+
+  return sheet;
+}
+
+function ensureLeadMagnetHeaders_(sheet) {
+  Object.keys(LEAD_MAGNET_HEADER_MAP).forEach(function (key) {
+    const column = LEAD_MAGNET_COLUMN_MAP[key];
+    const header = LEAD_MAGNET_HEADER_MAP[key];
+    const cell = sheet.getRange(1, column);
+
+    if (cell.getValue() !== header) {
+      cell.setValue(header);
+    }
+  });
+}
+
+function normalizeLeadMagnetData_(source) {
+  source = source || {};
+
+  return {
+    tanggal: getFirstValue_(source, ['tanggal', 'date', 'created_date', 'createdDate']),
+    nama: getFirstValue_(source, ['nama', 'name']),
+    email: getFirstValue_(source, ['email']),
+    sumber:
+      getFirstValue_(source, ['sumber', 'source']) || LEAD_MAGNET_DEFAULT_SOURCE,
+  };
+}
+
+function upsertLeadMagnetRow_(sheet, leadData) {
+  const rowIndex = findNextAvailableLeadMagnetRow_(sheet);
+  writeLeadMagnetDataToRow_(sheet, rowIndex, leadData);
+  return rowIndex;
+}
+
+function findNextAvailableLeadMagnetRow_(sheet) {
+  const lastRow = Math.max(sheet.getLastRow(), FIRST_LEAD_MAGNET_ROW);
+  const rows = sheet
+    .getRange(
+      FIRST_LEAD_MAGNET_ROW,
+      1,
+      lastRow - FIRST_LEAD_MAGNET_ROW + 1,
+      MAX_LEAD_MAGNET_COLUMN
+    )
+    .getValues();
+
+  for (var index = rows.length - 1; index >= 0; index -= 1) {
+    if (rowHasLeadMagnetData_(rows[index])) {
+      return FIRST_LEAD_MAGNET_ROW + index + 1;
+    }
+  }
+
+  return FIRST_LEAD_MAGNET_ROW;
+}
+
+function rowHasLeadMagnetData_(row) {
+  return Object.keys(LEAD_MAGNET_COLUMN_MAP).some(function (key) {
+    const columnIndex = LEAD_MAGNET_COLUMN_MAP[key] - 1;
+    return String(row[columnIndex] || '').trim() !== '';
+  });
+}
+
+function writeLeadMagnetDataToRow_(sheet, rowIndex, leadData) {
+  Object.keys(LEAD_MAGNET_COLUMN_MAP).forEach(function (key) {
+    const value = leadData[key] === undefined || leadData[key] === null ? '' : leadData[key];
+    sheet.getRange(rowIndex, LEAD_MAGNET_COLUMN_MAP[key]).setValue(value);
+  });
+}
+
+function cancelExpiredPendingOrders() {
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  ensureOrderSheetHeaders_(spreadsheet);
+
+  return handleExpiredPendingOrders_(spreadsheet, {});
+}
+
+function installHourlyExpiryTrigger() {
+  const handlerFunction = 'cancelExpiredPendingOrders';
+
+  ScriptApp.getProjectTriggers().forEach(function (trigger) {
+    if (trigger.getHandlerFunction() === handlerFunction) {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  ScriptApp.newTrigger(handlerFunction).timeBased().everyHours(1).create();
+
+  return {
+    ok: true,
+    handlerFunction: handlerFunction,
+    frequency: 'everyHours(1)',
+    expiryHours: ORDER_EXPIRY_HOURS,
+  };
+}
+
+function handleExpiredPendingOrders_(spreadsheet, payload) {
+  const pendingSheet = getOrderSheet_(spreadsheet, SHEET_NAMES.pending);
+  const cancelledSheet = getOrderSheet_(spreadsheet, SHEET_NAMES.cancelled);
+  const now = payload && payload.now ? new Date(payload.now) : new Date();
+  const cutoffTime = now.getTime() - ORDER_EXPIRY_MS;
+  const lastRow = pendingSheet.getLastRow();
+  const movedOrders = [];
+
+  if (lastRow < FIRST_ORDER_ROW) {
+    return {
+      ok: true,
+      event: 'cancel_expired_pending',
+      scriptVersion: SCRIPT_VERSION,
+      movedCount: 0,
+      movedOrders: movedOrders,
+    };
+  }
+
+  for (var rowIndex = lastRow; rowIndex >= FIRST_ORDER_ROW; rowIndex -= 1) {
+    const orderData = readOrderDataFromRow_(pendingSheet, rowIndex);
+    const statusFollowUp = String(orderData.status_follow_up || '').trim().toLowerCase();
+
+    if (!orderData.order_id || (statusFollowUp && statusFollowUp !== 'pending')) {
+      continue;
+    }
+
+    const createdDate = parseSheetDate_(orderData.created_date);
+    if (!createdDate || createdDate.getTime() > cutoffTime) {
+      continue;
+    }
+
+    orderData.status_follow_up = 'Cancelled';
+    const targetRowIndex = upsertOrderRow_(cancelledSheet, orderData.order_id, orderData);
+    pendingSheet.deleteRow(rowIndex);
+
+    movedOrders.push({
+      order_id: orderData.order_id,
+      sourceRowIndex: rowIndex,
+      targetSheetName: cancelledSheet.getName(),
+      targetRowIndex: targetRowIndex,
+    });
+  }
+
+  return {
+    ok: true,
+    event: 'cancel_expired_pending',
+    scriptVersion: SCRIPT_VERSION,
+    movedCount: movedOrders.length,
+    movedOrders: movedOrders,
   };
 }
 
@@ -247,11 +467,33 @@ function findOrderRowIndex_(sheet, orderId) {
 function upsertOrderRow_(sheet, orderId, orderData) {
   var rowIndex = findOrderRowIndex_(sheet, orderId);
   if (!rowIndex) {
-    rowIndex = sheet.getLastRow() + 1;
+    rowIndex = findNextAvailableOrderRow_(sheet);
   }
 
   writeOrderDataToRow_(sheet, rowIndex, orderData);
   return rowIndex;
+}
+
+function findNextAvailableOrderRow_(sheet) {
+  const lastRow = Math.max(sheet.getLastRow(), FIRST_ORDER_ROW);
+  const rows = sheet
+    .getRange(FIRST_ORDER_ROW, 1, lastRow - FIRST_ORDER_ROW + 1, MAX_ORDER_COLUMN)
+    .getValues();
+
+  for (var index = rows.length - 1; index >= 0; index -= 1) {
+    if (rowHasOrderData_(rows[index])) {
+      return FIRST_ORDER_ROW + index + 1;
+    }
+  }
+
+  return FIRST_ORDER_ROW;
+}
+
+function rowHasOrderData_(row) {
+  return Object.keys(COLUMN_MAP).some(function (key) {
+    const columnIndex = COLUMN_MAP[key] - 1;
+    return String(row[columnIndex] || '').trim() !== '';
+  });
 }
 
 function readOrderDataFromRow_(sheet, rowIndex) {
@@ -327,6 +569,36 @@ function normalizeOrderData_(source) {
     shipping_city: getFirstValue_(source, ['shipping_city', 'shippingCity']),
     delivery_fee: getFirstValue_(source, ['delivery_fee', 'deliveryFee']),
   };
+}
+
+function parseSheetDate_(value) {
+  if (value instanceof Date && !isNaN(value.getTime())) {
+    return value;
+  }
+
+  const text = String(value || '').trim();
+  if (!text) {
+    return null;
+  }
+
+  const normalizedText = text.replace(/\s*WIB$/i, '').replace('T', ' ');
+  const match = normalizedText.match(
+    /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?/
+  );
+
+  if (match) {
+    const year = Number(match[1]);
+    const month = Number(match[2]) - 1;
+    const day = Number(match[3]);
+    const hour = Number(match[4]);
+    const minute = Number(match[5]);
+    const second = Number(match[6] || 0);
+
+    return new Date(Date.UTC(year, month, day, hour - 7, minute, second));
+  }
+
+  const fallbackDate = new Date(text);
+  return isNaN(fallbackDate.getTime()) ? null : fallbackDate;
 }
 
 function getFirstValue_(source, keys) {

@@ -4,6 +4,9 @@ const seminarScheduleByCity = {
   //   { date: '2026-04-18', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel A, Jakarta' },
   //   { date: '2026-06-20', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel B, Jakarta' },
   // ],
+  online: [
+    { date: '2026-05-23', time: '14.00 - 16.00', timezone: 'WIB', location: 'Online via ZOOM' },
+  ],
   balikpapan: [
     { date: '2026-06-20', time: '09.00 - 12.00', timezone: 'WITA', location: 'Platinum Hotel Balikpapan'},
   ],
@@ -40,7 +43,9 @@ const seminarScheduleByCity = {
     { date: '2026-10-17', time: '09.00 - 12.00', timezone: 'WIB', location: 'Luminor Hotel Padjajaran Bogor'},
     { date: '2026-12-12', time: '09.00 - 12.00', timezone: 'WIB', location: 'Luminor Hotel Padjajaran Bogor'},
   ],
-  cirebon: [],
+  cirebon: [
+    { date: '2026-06-13', time: '09.00 - 12.00', timezone: 'WIB', location: 'Segera diumumkan'},
+  ],
   jakarta: [
     { date: '2026-04-12', time: '09.00 - 12.00', timezone: 'WIB', location: 'Jakarta Design Center, Jakarta'},
     { date: '2026-05-10', time: '09.00 - 12.00', timezone: 'WIB', location: 'Jakarta Design Center, Jakarta'},
@@ -116,7 +121,9 @@ const seminarScheduleByCity = {
     { date: '2026-08-15', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel HARRIS Pontianak'},
     { date: '2026-11-14', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel HARRIS Pontianak'},
   ],
-  purwokerto: [],
+  purwokerto: [
+    { date: '2026-07-25', time: '09.00 - 12.00', timezone: 'WIB', location: 'Segera diumumkan'},
+  ],
   samarinda: [
     { date: '2026-05-09', time: '09.00 - 12.00', timezone: 'WIB', location: 'Hotel YELLO Samarinda'},
   ],

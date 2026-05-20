@@ -26,12 +26,35 @@ The payment-start event writes a row to the `Pending Orders` tab using the same 
 18. AL: `Kota Pengiriman`
 19. AM: `Biaya Ongkir`
 
+New rows are written to the next available row after the last row containing order data in the mapped order columns. This avoids both top insertion and `getLastRow()` being misled by formatting-only rows.
+
 It also sends WhatsApp messages through WatZap:
 
 1. Customer notification with order details and the Midtrans payment link.
 2. Admin notification for each number in `WATZAP_ADMIN_PHONE_NUMBERS`.
 
 If Midtrans later sends a payment notification, the server updates the `Payment Method` and `Status Follow Up` cells for that `order_id`. Paid orders are moved to `Completed Orders`, failed/cancelled/expired orders are moved to `Cancelled Orders`, and challenged orders are moved to `On Hold Orders`.
+
+New Midtrans transactions also send `X-Override-Notification` with the canonical backend URL:
+
+`https://www.treindonesia.com/api/midtrans/notifications`
+
+Keep the dashboard Payment Notification URL on the same `www` URL as a fallback. Avoid the non-www URL because it redirects, and webhook providers may not reliably follow redirects for POST notifications.
+
+The Apps Script also includes a fallback expiry job. `cancelExpiredPendingOrders()` scans `Pending Orders` and moves rows older than 24 hours to `Cancelled Orders`. This is useful if a Midtrans `expire` webhook is delayed or missed.
+
+## Free Test Leads
+
+When `/tes-gratis` users request their result email, the backend also sends a `free_test_lead_created` event to the same Apps Script webhook.
+
+The event writes to spreadsheet `12aoh6enGOns26uAf0jdwr83xaz1-b9PSEFQ6lzmvb9s`, tab `Tes Gratis`, using:
+
+1. A: `Tanggal`
+2. B: `Nama`
+3. C: `Email`
+4. H: `Sumber`, defaulting to `Leads Web`
+
+The diagnostic response includes `leadMagnet.nextAvailableRow` so you can verify where the next test lead will be written.
 
 ## Server env
 
@@ -82,6 +105,31 @@ It is already preconfigured for this spreadsheet:
 6. Copy the deployed `/exec` URL into `GOOGLE_SHEETS_WEBHOOK_URL`.
 
 After deployment, a diagnostic POST with `{ "event": "diagnostic" }` and the webhook secret should return `ok: true` plus the four order sheet names. If it returns `success: false` or an `appendRow` error, the deployed Apps Script is still an older version.
+
+For the next-row and expiry-fallback version, the diagnostic response must include:
+
+```json
+{
+  "scriptVersion": "2026-05-20-lead-magnet-next-data-row",
+  "insertMode": "next_empty_order_data_row",
+  "expiryHours": 24
+}
+```
+
+Each sheet entry in the diagnostic response also includes `nextAvailableRow`, which is the row the next new order would use for that tab.
+
+### Expiry fallback trigger
+
+After deploying the script, run `installHourlyExpiryTrigger()` once from the Apps Script editor. It creates an hourly trigger for `cancelExpiredPendingOrders()`, which moves pending rows older than 24 hours into `Cancelled Orders`.
+
+You can also test the fallback manually by running `cancelExpiredPendingOrders()` from the Apps Script editor, or by POSTing:
+
+```json
+{
+  "secret": "your-webhook-secret",
+  "event": "cancel_expired_pending"
+}
+```
 
 ## WatZap request format used by the backend
 

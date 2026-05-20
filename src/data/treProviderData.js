@@ -94,14 +94,6 @@ export const certifiedTreProviders = [
   treProviderProfiles.Johannes,
   treProviderProfiles['Ivonne Somar'],
   treProviderProfiles['Ice Carlianti'],
-  {
-    name: 'Ilmia R. Susanti (Santi)',
-    role: 'Global Certified TRE Provider in Indonesia',
-    details: [],
-    image: 'ilmia.jpg',
-    fallbackImage,
-    roles: ['Global Certified TRE Provider in Indonesia'],
-  },
   treProviderProfiles['Yuliana Chen'],
   treProviderProfiles['Femi Lusiyani Dewi'],
 ];

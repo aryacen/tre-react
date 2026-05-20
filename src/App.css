@@ -4935,6 +4935,14 @@ body.nav-menu-open .wa-widget {
   color: #0f2534;
 }
 
+.tre-individual-city-date {
+  display: block;
+  margin-top: 8px;
+  color: #547087;
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
 .tre-individual-city-arrow {
   width: 42px;
   height: 42px;
@@ -5042,6 +5050,13 @@ body.nav-menu-open .wa-widget {
     font-size: 0.95rem;
     line-height: 1.2;
     color: #10293c;
+  }
+
+  .tre-individual-city-date {
+    margin-top: 6px;
+    font-size: 0.74rem;
+    line-height: 1.35;
+    color: rgba(41, 66, 92, 0.78);
   }
 
   .tre-individual-city-arrow {

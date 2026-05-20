@@ -175,6 +175,7 @@ function TreIndividualsPage() {
                     <div>
                       <span className="tre-individual-city-kicker">Seminar TRE</span>
                       <h3>{city.name}</h3>
+                      <span className="tre-individual-city-date">{city.waktuDate}</span>
                     </div>
                     <span className="tre-individual-city-arrow" aria-hidden="true">
                       <img

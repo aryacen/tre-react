@@ -5,7 +5,7 @@ services:
     plan: free
     envVars:
       - key: FRONTEND_BASE_URL
-        value: https://treindonesia.com
+        value: https://www.treindonesia.com
     buildCommand: npm install && npm --prefix server install && npm run build
     startCommand: npm --prefix server start
     autoDeploy: true
